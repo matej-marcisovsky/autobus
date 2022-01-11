@@ -1,0 +1,29 @@
+{
+  "name": "autobus",
+  "version": "1.0.0",
+  "description": "Autobus card game.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matej-marcisovsky/autobus.git"
+  },
+  "keywords": [
+    "autobus"
+  ],
+  "author": "Matěj Marčišovský",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/matej-marcisovsky/autobus/issues"
+  },
+  "homepage": "https://github.com/matej-marcisovsky/autobus#readme",
+  "devDependencies": {
+    "typescript": "^4.5.2"
+  },
+  "dependencies": {
+    "array-shuffle": "^3.0.0"
+  },
+  "type": "module"
+}
