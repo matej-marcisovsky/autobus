@@ -1,24 +1,26 @@
 import Card from "./Card.js";
+import Joker from "./Joker.js";
 import { InvalidGameMove } from "./Errors.js";
 
 const PILE_COUNT = 4;
 
-const ERROR_CARD_NOT_IN_HAND = 'Card not in hand.';
+export const ERROR_CARD_NOT_IN_HAND = 'Card not in hand.';
 const ERROR_NO_PILE = 'No appropriate pile left.';
 
 export default class Player {
   readonly id: number;
-  deck: Card[];
+  stock: Card[];
   hand: Card[];
+  jokers: Joker[] = [];
   piles: Array<Card[]> = [];
 
-  get deckCard() {
-    return this.deck[0];
+  get stockCard() {
+    return this.stock[0];
   }
 
-  constructor(id: number, deck: Card[], hand: Card[]) {
+  constructor(id: number, stock: Card[], hand: Card[]) {
     this.id = id;
-    this.deck = deck;
+    this.stock = stock;
     this.hand = hand;
 
     this.initPiles();
@@ -30,16 +32,24 @@ export default class Player {
     }
   }
 
-  isCardInHand(card: Card): boolean {
-    return this.hand.includes(card);
-  }
-
-  moveCardToDeck(card: Card) {
+  private removeCardFromHand(card: Card) {
     if (!this.isCardInHand(card)) {
       throw new InvalidGameMove(ERROR_CARD_NOT_IN_HAND);
     }
 
-    this.deck.push(card);
+    this.hand.splice(this.hand.indexOf(card), 1);
+  }
+
+  isCardInHand(card: Card): boolean {
+    return this.hand.includes(card);
+  }
+
+  moveCardToStock(card: Card) {
+    if (!this.isCardInHand(card)) {
+      throw new InvalidGameMove(ERROR_CARD_NOT_IN_HAND);
+    }
+
+    this.stock.push(card);
     this.removeCardFromHand(card);
   }
 
@@ -62,13 +72,5 @@ export default class Player {
     }
 
     throw new InvalidGameMove(ERROR_NO_PILE);
-  }
-
-  removeCardFromHand(card: Card) {
-    if (!this.isCardInHand(card)) {
-      throw new InvalidGameMove(ERROR_CARD_NOT_IN_HAND);
-    }
-
-    this.hand.splice(this.hand.indexOf(card), 1);
   }
 }
