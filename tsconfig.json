@@ -4,9 +4,10 @@
     "moduleResolution": "node",
     "target": "es2020",
     "allowSyntheticDefaultImports": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "jsx": "react"
   },
   "files": [
-    "src/Game.ts"
+    "src/autobus.tsx"
   ]
 }

@@ -1,27 +1,28 @@
-import Card from "../dist/Card.js";
-import Player from "../dist/Player.js";
-import Rank from "../dist/Rank.js";
-import Suit from "../dist/Suit.js";
+import Card from "../dist/game/Card.js";
+import Color from "../dist/game/Color.js";
+import Player from "../dist/game/Player.js";
+import Rank from "../dist/game/Rank.js";
+import Suit from "../dist/game/Suit.js";
 
 const STOCK = [
-  new Card(Suit.Club, Rank.Ace),
-  new Card(Suit.Club, Rank.N2),
-  new Card(Suit.Club, Rank.N3),
-  new Card(Suit.Club, Rank.N4),
-  new Card(Suit.Club, Rank.N5),
-  new Card(Suit.Club, Rank.N6),
-  new Card(Suit.Club, Rank.N7),
-  new Card(Suit.Club, Rank.N8),
-  new Card(Suit.Club, Rank.N9),
-  new Card(Suit.Club, Rank.N10)
+  new Card(Suit.Club, Rank.Ace, Color.Black),
+  new Card(Suit.Club, Rank.N2, Color.Black),
+  new Card(Suit.Club, Rank.N3, Color.Black),
+  new Card(Suit.Club, Rank.N4, Color.Black),
+  new Card(Suit.Club, Rank.N5, Color.Black),
+  new Card(Suit.Club, Rank.N6, Color.Black),
+  new Card(Suit.Club, Rank.N7, Color.Black),
+  new Card(Suit.Club, Rank.N8, Color.Black),
+  new Card(Suit.Club, Rank.N9, Color.Black),
+  new Card(Suit.Club, Rank.N10, Color.Black)
 ];
 
 const HAND = [
-  new Card(Suit.Diamond, Rank.Ace),
-  new Card(Suit.Diamond, Rank.N2),
-  new Card(Suit.Diamond, Rank.N3),
-  new Card(Suit.Diamond, Rank.N4),
-  new Card(Suit.Diamond, Rank.N5)
+  new Card(Suit.Diamond, Rank.Ace, Color.Black),
+  new Card(Suit.Diamond, Rank.N2, Color.Black),
+  new Card(Suit.Diamond, Rank.N3, Color.Black),
+  new Card(Suit.Diamond, Rank.N4, Color.Black),
+  new Card(Suit.Diamond, Rank.N5, Color.Black)
 ];
 
 let player = null;
@@ -47,7 +48,7 @@ describe('Player', () => {
 
   it('should not move card to pile', () => {
     const t = () => {
-      player.moveCardToPile(new Card(Suit.Diamond, Rank.Ace));
+      player.moveCardToPile(new Card(Suit.Diamond, Rank.Ace, Color.Black));
     };
 
     expect(t).toThrow();
@@ -55,7 +56,7 @@ describe('Player', () => {
 
   it('should not move card to stock', () => {
     const t = () => {
-      player.moveCardToStock(new Card(Suit.Diamond, Rank.Ace));
+      player.moveCardToStock(new Card(Suit.Diamond, Rank.Ace, Color.Black));
     };
 
     expect(t).toThrow();

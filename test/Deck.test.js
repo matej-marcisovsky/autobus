@@ -1,4 +1,4 @@
-import { generate, addJokers } from "../dist/Deck.js";
+import { generate, addJokers } from "../dist/game/Deck.js";
 
 let deck = null;
 

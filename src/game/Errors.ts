@@ -1,5 +1,5 @@
 export class InvalidGameMove extends Error {
-  constructor(message: string) {
+  constructor(message: string = 'Unknown move.') {
     super(message);
 
     this.name = 'InvalidGameMove';

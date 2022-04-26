@@ -1,6 +1,7 @@
 import arrayShuffle from "array-shuffle";
 
 import Card from "./Card.js";
+import Color from "./Color.js";
 import Joker from "./Joker.js";
 import Rank from "./Rank.js";
 import Suit from "./Suit.js";
@@ -11,12 +12,13 @@ const DECK_MULTIPLIER = 2;
 export function generate() {
   const cards = [];
 
-  for (let i = 0; i < DECK_MULTIPLIER; i++) {
+  for (let deck = 0; deck < DECK_MULTIPLIER; deck++) {
     for (const suit in Suit) {
       for (const rank in Rank) {
         cards.push(new Card(
           Suit[suit],
-          Rank[rank]
+          Rank[rank],
+          deck === 0 ? Color.Black : Color.Red
         ));
       }
     }

@@ -1,4 +1,4 @@
-import Game from "../dist/Game.js";
+import Game from "../dist/game/Game.js";
 
 let game = null;
 

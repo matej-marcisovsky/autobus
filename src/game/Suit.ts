@@ -1,5 +1,5 @@
 enum Suit {
-  Club = 'diamond',
+  Club = 'club',
   Diamond = 'diamond',
   Heart = 'heart',
   Spade = 'spade'
