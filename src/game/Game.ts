@@ -1,14 +1,17 @@
 import arrayShuffle from "array-shuffle";
 
 import Card from "./Card.js";
-import { addJokers, generate } from "./Deck.js";
+import { generate } from "./Deck.js";
 import Player, { ERROR_CARD_NOT_IN_ORIGIN } from "./Player.js";
 import { InvalidGameMove, UnknownPlayer } from "./Errors.js";
 import Rank from "./Rank.js";
 import Joker from "./Joker.js";
 import Origin from "./Origin.js";
+import Suit from "./Suit.js";
+import Color from "./Color.js";
 
-const PLAYER_STOCK_CARD_COUNT = 15;
+const MAX_AGE = 1000 * 60 * 60;
+const PLAYER_STOCK_CARD_COUNT = 1;
 export const PLAYER_HAND_CARD_COUNT = 5;
 
 const ERROR_HAND_FULL = 'Hand is full.';
@@ -16,18 +19,86 @@ const ERROR_NO_STRAIGHT = 'No straight available.';
 const ERROR_NEXT_RANK = 'This card is not in order with last card in straight..';
 
 export default class Game {
-  id: number;
-  stock: Card[] = generate();
-  players: Player[] = [];
-  straights: Array<Card[]> = [];
   currentPlayer: Player;
+  id: string;
+  lastActionTime: number = Date.now()
+  players: Player[] = [];
+  stock: Card[] = [];
+  straights: Array<Card[]> = [];
 
-  constructor(id: number, playerCount: number) {
+  static deserialize(data): Game {
+    const { currentPlayer, id, stock, players, straights } = data
+
+    if (!id || !stock || !players || !straights) {
+      throw new Error('Invalid serialized data.');
+    }
+
+    const _stock = [], _players = [], _straights = [];
+
+    stock.forEach(card => {
+      _stock.push(new Card(card.suit as Suit, card.rank as Rank, card.color as Color));
+    });
+
+    players.forEach(player => {
+      const playerStock = [];
+      player.stock.forEach(card => {
+        playerStock.push(new Card(card.suit as Suit, card.rank as Rank, card.color as Color));
+      });
+
+      const playerHand = [];
+      player.hand.forEach(card => {
+        playerHand.push(new Card(card.suit as Suit, card.rank as Rank, card.color as Color));
+      });
+
+      const playerPiles = [];
+      player.piles.forEach(pile => {
+        const playerPile = [];
+
+        pile.forEach(card => {
+          playerPile.push(new Card(card.suit as Suit, card.rank as Rank, card.color as Color));
+        });
+
+        playerPiles.push(playerPile);
+      });
+
+      _players.push(new Player(player.id, playerStock, playerHand, playerPiles, player.hasUser));
+    });
+
+    straights.forEach(straight => {
+      const _straight = [];
+
+      straight.forEach(card => {
+        _straight.push(new Card(card.suit as Suit, card.rank as Rank, card.color as Color));
+      });
+
+      _straights.push(_straight);
+    });
+
+    const game = new Game(id, players.length, _stock, _players, _straights);
+
+    game.currentPlayer = game.players.find((player) => player.id === currentPlayer.id);
+
+    return game;
+  }
+
+  get isOld(): boolean {
+    return Date.now() - this.lastActionTime > MAX_AGE;
+  }
+
+  constructor(id: string, playerCount: number, stock: Card[] = null, players: Player[] = null, straights: Array<Card[]> = null) {
     this.id = id;
-    this.initPlayers(playerCount);
-    this.stock = addJokers(this.stock);
 
-    this.currentPlayer = this.players[0];
+    if (stock && players && straights) {
+      this.stock = stock;
+      this.players = players;
+      this.straights = straights;
+    } else {
+      this.stock = generate();
+      this.initPlayers(playerCount);
+
+      this.currentPlayer = this.players[0];
+      this.currentPlayer.hasUser = true;
+    }
   }
 
   private drawCards() {

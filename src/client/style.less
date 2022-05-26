@@ -1,12 +1,29 @@
-@import (inline) "../node_modules/bulma/css/bulma.min.css";
+@import (inline) "../../node_modules/bulma/css/bulma.min.css";
 
 @card-width: 150px;
-@card-ratio: 3.5 / 2.5;
+@card-ratio: (3.5 / 2.5);
 @border-color: #edeaea;
 
 body {
   font-family: 'Roboto Slab', serif;
   font-size: 16px;
+}
+
+.app--middle {
+  min-width: 1002px; // TODO better spacing
+}
+
+.notification {
+  @notification-width: 200px;
+
+  position: absolute;
+  top: 50%;
+  left: calc(50% - @notification-width / 2);
+  z-index: 9999;
+
+  width: @notification-width;
+  
+  text-align: center;
 }
 
 .card {

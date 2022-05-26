@@ -1,13 +1,15 @@
 import * as React from "react";
 import classNames from "classnames";
 
-import Card from "../game/Card.js";
-import Color from "../game/Color.js";
-import Rank from "../game/Rank.js";
-import Suit from "../game/Suit.js";
+import Card from "../../game/Card.js";
+import Color from "../../game/Color.js";
+import GameContext from "../GameContext.js";
+import Rank from "../../game/Rank.js";
+import Suit from "../../game/Suit.js";
 
 interface Props {
   card: Card,
+  isDraggable: boolean,
   isDroppable: boolean,
   inPile: boolean,
   inStock: boolean,
@@ -15,8 +17,10 @@ interface Props {
 }
 
 export default class extends React.Component<Props> {
+  static contextType: React.Context<any> = GameContext;
+
   render() {
-    const { card } = this.props;
+    const { card, isDraggable } = this.props;
 
     if (!card) {
       return null;
@@ -24,12 +28,13 @@ export default class extends React.Component<Props> {
 
     return (
       <div
-        className={classNames('card playing-card is-clickable', {
+        className={classNames('card playing-card', {
+          'is-clickable': isDraggable,
           'playing-card--red': card.color === Color.Red
         })}
         onDragStart={(event) => this.onDragStart(event)}
         onDragOver={(event) => this.onDragOver(event)}
-        draggable
+        draggable={isDraggable}
       >
         {this._renderFace()}
       </div>
@@ -148,6 +153,11 @@ export default class extends React.Component<Props> {
   }
 
   onDragOver(event) {
+    if (!this.context.isPlayersTurn()) {
+      event.dataTransfer.dropEffect = 'none';
+      return;
+    }
+
     event.dataTransfer.dropEffect = this.props.isDroppable ? 'move' : 'none';
   }
 }

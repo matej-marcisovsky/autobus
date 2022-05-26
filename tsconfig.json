@@ -8,6 +8,7 @@
     "jsx": "react"
   },
   "files": [
-    "src/autobus.tsx"
+    "src/server/app.ts",
+    "src/client/app.tsx"
   ]
 }

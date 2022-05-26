@@ -2,7 +2,7 @@ import arrayShuffle from "array-shuffle";
 
 import Card from "./Card.js";
 import Color from "./Color.js";
-import Joker from "./Joker.js";
+// import Joker from "./Joker.js";
 import Rank from "./Rank.js";
 import Suit from "./Suit.js";
 
@@ -18,7 +18,7 @@ export function generate() {
         cards.push(new Card(
           Suit[suit],
           Rank[rank],
-          deck === 0 ? Color.Black : Color.Red
+          deck === 0 ? Color.Black : Color.Red // TODO colors!!!
         ));
       }
     }
@@ -27,12 +27,12 @@ export function generate() {
   return arrayShuffle(cards);
 }
 
-export function addJokers(cards: Card[]) {
-  for (let i = 0; i < DECK_MULTIPLIER; i++) {
-    for (let j = 0; j < JOKERS_PER_DECK; j++) {
-      cards.push(new Joker());
-    }
-  }
+// export function addJokers(cards: Card[]) {
+//   for (let i = 0; i < DECK_MULTIPLIER; i++) {
+//     for (let j = 0; j < JOKERS_PER_DECK; j++) {
+//       cards.push(new Joker());
+//     }
+//   }
 
-  return arrayShuffle(cards);
-}
+//   return arrayShuffle(cards);
+// }

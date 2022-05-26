@@ -1,5 +1,5 @@
 import Card from "./Card.js";
-import Joker from "./Joker.js";
+// import Joker from "./Joker.js";
 import { InvalidGameMove } from "./Errors.js";
 import Origin from "./Origin.js";
 
@@ -12,19 +12,25 @@ export default class Player {
   readonly id: number;
   stock: Card[];
   hand: Card[];
-  jokers: Joker[] = [];
+  // jokers: Joker[] = [];
   piles: Array<Card[]> = [];
+  hasUser: boolean = false;
 
   get stockCard() {
     return this.stock[0];
   }
 
-  constructor(id: number, stock: Card[], hand: Card[]) {
+  constructor(id: number, stock: Card[], hand: Card[], piles: Array<Card[]> = null, hasUser: boolean = false) {
     this.id = id;
     this.stock = stock;
     this.hand = hand;
+    this.hasUser = hasUser;
 
-    this.initPiles();
+    if (piles) {
+      this.piles = piles;
+    } else {
+      this.initPiles();
+    }
   }
 
   private initPiles() {
@@ -40,7 +46,7 @@ export default class Player {
       case Origin.Hand:
         return hand.find(handCard => handCard.isSame(card));
       case Origin.Pile:
-        const pile = piles.find(pile => pile[0].isSame(card));
+        const pile = piles.find(pile => pile.length && pile[0].isSame(card));
 
         if (pile) {
           return pile[0];
@@ -111,7 +117,7 @@ export default class Player {
       case Origin.Hand:
         return hand.splice(this.hand.indexOf(card), 1);
       case Origin.Pile:
-        const pile = piles.find(pile => pile[0].isSame(card));
+        const pile = piles.find(pile => pile.length && pile[0].isSame(card));
 
         if (pile) {
           pile.splice(0, 1);
@@ -119,7 +125,9 @@ export default class Player {
 
         return;
       case Origin.Stock:
-        return stock.splice(0, 1);
+        stock.splice(0, 1);
+
+        return;
     }
   }
 }

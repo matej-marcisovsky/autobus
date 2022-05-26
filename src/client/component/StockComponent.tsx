@@ -1,6 +1,8 @@
 import * as React from "react";
 
-import Card from "../game/Card.js";
+import GameActionType from "../GameActionType.js";
+import GameContext from "../GameContext.js";
+import Card from "../../game/Card.js";
 
 import CounterComponent from "./CounterComponent.js";
 import CardComponent from "./CardComponent.js";
@@ -8,20 +10,22 @@ import CardComponent from "./CardComponent.js";
 interface Props {
   cards: Card[],
   hideFace: boolean,
-  isDroppable: boolean,
-  onMoveCardToStock: Function
+  isDraggable: boolean,
+  isDroppable: boolean
 }
 
 export default class extends React.Component<Props> {
+  static contextType: React.Context<any> = GameContext;
+
   render() {
-    const { cards, hideFace, isDroppable } = this.props;
+    const { cards, hideFace, isDraggable, isDroppable } = this.props;
 
     return (
       <div
         className="stock is-relative is-flex-shrink-0"
         onDragOver={(event) => this.onDragOver(event)}
         onDrop={(event) => this.onDrop(event)}>
-        <CardComponent card={cards[0]} inPile={false} inStock={true} isDroppable={isDroppable} hideFace={hideFace}/>
+        <CardComponent card={cards[0]} inPile={false} inStock={true} isDraggable={isDraggable} isDroppable={isDroppable} hideFace={hideFace}/>
         {isDroppable && <CounterComponent>{cards.length}</CounterComponent>}
       </div>
     );
@@ -30,17 +34,25 @@ export default class extends React.Component<Props> {
   onDragOver(event) {
     event.preventDefault();
 
+    if (!this.context.isPlayersTurn()) {
+      event.dataTransfer.dropEffect = 'none';
+      return;
+    }
+
     if (this.props.isDroppable) {
       event.dataTransfer.dropEffect = 'move';
     }
   }
 
   onDrop(event) {
+    if (!this.context.isPlayersTurn()) {
+      return;
+    }
+
     try {
-      const { onMoveCardToStock } = this.props;
       const { color, suit, rank } = JSON.parse(event.dataTransfer.getData('card'));
 
-      onMoveCardToStock(new Card(suit, rank, color));
+      this.context.emit(GameActionType.MoveCardToStock, new Card(suit, rank, color));
     } catch (error) {
       console.error(error);
     }
