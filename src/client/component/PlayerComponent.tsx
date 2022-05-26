@@ -34,7 +34,7 @@ export default class extends React.Component<Props> {
     return (
       <div className="container block is-flex is-flex-direction-column player">
         <div className="is-flex">
-          <StockComponent cards={player.stock} hideFace={false} isDraggable={!isEnemy} isDroppable={!isEnemy}/>
+          <StockComponent cards={player.stock} hideFace={false} isDraggable={!isEnemy && this.context.isPlayersTurn()} isDroppable={!isEnemy}/>
           <DelimiterComponent/>
           {this.renderPiles()}
         </div>

@@ -69,7 +69,7 @@ const root = ReactDOMClient.createRoot(container);
 root.render(
   <GameContext.Provider value={{
     emit: (eventName, data) => emitter.emit(eventName, data),
-    isPlayersTurn: () => game && game.currentPlayer.id === playerId,
+    isPlayersTurn: () => game && game.currentPlayer.id === playerId && !game.players.find((player) => !player.hasUser),
     on: (eventName, listener) => emitter.on(eventName, listener)
   }}>
     <AppComponent />
