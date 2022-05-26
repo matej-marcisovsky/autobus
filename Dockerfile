@@ -4,6 +4,8 @@ WORKDIR /usr/app
 
 COPY package*.json ./
 
+RUN npm i -g typescript less
+
 RUN npm ci
 
 COPY . .
