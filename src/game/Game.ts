@@ -11,7 +11,7 @@ import Suit from "./Suit.js";
 import Color from "./Color.js";
 
 const MAX_AGE = 1000 * 60 * 60;
-const PLAYER_STOCK_CARD_COUNT = 1;
+const PLAYER_STOCK_CARD_COUNT = 15;
 export const PLAYER_HAND_CARD_COUNT = 5;
 
 const ERROR_HAND_FULL = 'Hand is full.';
