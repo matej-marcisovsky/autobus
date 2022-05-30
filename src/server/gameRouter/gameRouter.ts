@@ -20,7 +20,24 @@ export default (server) => {
     path: '/game'
   });
 
+  setInterval(() => {
+    wss.clients.forEach((client) => {
+      console.log('sending ping');
+      client.ping();
+    });
+  }, 2000);
+
   wss.on('connection', function connection(ws) {
+    ws.on('pong', () => {
+      const { id } = ws;
+
+      if (id && games.has(id)) {
+        const game = games.get(id);
+
+        game.lastActionTime = Date.now();
+      }
+    });
+
     ws.on('message', (message) => {
       message = Message.fromBuffer(message);
 
