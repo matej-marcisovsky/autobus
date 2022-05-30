@@ -23,10 +23,15 @@ export default class Card {
   readonly rank: Rank;
   readonly color: Color;
 
-  constructor(suit: Suit, rank: Rank, color: Color) {
+  constructor(suit: Suit, rank: Rank) {
     this.suit = suit;
     this.rank = rank;
-    this.color = color;
+
+    if (suit === Suit.Diamond || suit === Suit.Heart) {
+      this.color = Color.Red;
+    } else {
+      this.color = Color.Black;
+    }
   }
 
   isNextRankOf(card: Card): boolean {

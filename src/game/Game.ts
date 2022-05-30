@@ -8,7 +8,6 @@ import Rank from "./Rank.js";
 import Joker from "./Joker.js";
 import Origin from "./Origin.js";
 import Suit from "./Suit.js";
-import Color from "./Color.js";
 
 const MAX_AGE = 1000 * 60 * 60;
 const PLAYER_STOCK_CARD_COUNT = 15;
@@ -36,18 +35,18 @@ export default class Game {
     const _stock = [], _players = [], _straights = [];
 
     stock.forEach(card => {
-      _stock.push(new Card(card.suit as Suit, card.rank as Rank, card.color as Color));
+      _stock.push(new Card(card.suit as Suit, card.rank as Rank));
     });
 
     players.forEach(player => {
       const playerStock = [];
       player.stock.forEach(card => {
-        playerStock.push(new Card(card.suit as Suit, card.rank as Rank, card.color as Color));
+        playerStock.push(new Card(card.suit as Suit, card.rank as Rank));
       });
 
       const playerHand = [];
       player.hand.forEach(card => {
-        playerHand.push(new Card(card.suit as Suit, card.rank as Rank, card.color as Color));
+        playerHand.push(new Card(card.suit as Suit, card.rank as Rank));
       });
 
       const playerPiles = [];
@@ -55,7 +54,7 @@ export default class Game {
         const playerPile = [];
 
         pile.forEach(card => {
-          playerPile.push(new Card(card.suit as Suit, card.rank as Rank, card.color as Color));
+          playerPile.push(new Card(card.suit as Suit, card.rank as Rank));
         });
 
         playerPiles.push(playerPile);
@@ -68,7 +67,7 @@ export default class Game {
       const _straight = [];
 
       straight.forEach(card => {
-        _straight.push(new Card(card.suit as Suit, card.rank as Rank, card.color as Color));
+        _straight.push(new Card(card.suit as Suit, card.rank as Rank));
       });
 
       _straights.push(_straight);
