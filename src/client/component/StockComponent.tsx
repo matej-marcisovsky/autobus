@@ -50,9 +50,9 @@ export default class extends React.Component<Props> {
     }
 
     try {
-      const { color, suit, rank } = JSON.parse(event.dataTransfer.getData('card'));
+      const { suit, rank } = JSON.parse(event.dataTransfer.getData('card'));
 
-      this.context.emit(GameActionType.MoveCardToStock, new Card(suit, rank, color));
+      this.context.emit(GameActionType.MoveCardToStock, new Card(suit, rank));
     } catch (error) {
       console.error(error);
     }

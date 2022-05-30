@@ -119,9 +119,9 @@ export default class extends React.Component<Props> {
     }
 
     try {
-      const { color, suit, rank } = JSON.parse(event.dataTransfer.getData('card'));
+      const { suit, rank } = JSON.parse(event.dataTransfer.getData('card'));
 
-      this.props.player.moveCardToOrigin(this.props.player.findCardInOrigin(new Card(suit, rank, color), Origin.Hand), Origin.Pile);
+      this.props.player.moveCardToOrigin(this.props.player.findCardInOrigin(new Card(suit, rank), Origin.Hand), Origin.Pile);
       this.context.emit(GameActionType.EndTurn);
     } catch (error) {
       console.error(error);

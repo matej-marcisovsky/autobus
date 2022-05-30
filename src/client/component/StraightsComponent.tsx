@@ -53,7 +53,7 @@ export default class extends React.Component<Props> {
 
     try {
       const { target } = event;
-      const { color, suit, rank } = JSON.parse(event.dataTransfer.getData('card'));
+      const { suit, rank } = JSON.parse(event.dataTransfer.getData('card'));
       let straightIndex = null;
       let origin = Origin.Hand;
 
@@ -69,7 +69,7 @@ export default class extends React.Component<Props> {
         origin = Origin.Stock;
       }
 
-      this.context.emit(GameActionType.MoveCardToStraight, { card: new Card(suit, rank, color), origin, straightIndex });
+      this.context.emit(GameActionType.MoveCardToStraight, { card: new Card(suit, rank), origin, straightIndex });
     } catch (error) {
       console.error(error);
     }
