@@ -22,7 +22,6 @@ export default (server) => {
 
   setInterval(() => {
     wss.clients.forEach((client) => {
-      console.log('sending ping');
       client.ping();
     });
   }, 2000);
