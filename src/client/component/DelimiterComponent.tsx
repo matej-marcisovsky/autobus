@@ -6,10 +6,6 @@ interface Props {
 }
 
 export default class extends React.Component<Props> {
-  shouldComponentUpdate() {
-    return false;
-  }
-
   render() {
     return (
       <div className={classNames('delimiter mx-5', {

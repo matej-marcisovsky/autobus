@@ -67,7 +67,7 @@ export default class extends React.Component<Props, State> {
           'is-danger': !success,
           'is-success': success,
         })}>
-          {success ? 'Vyhrál jsi!' : 'Prohrál jsi..'}
+          {success ? 'Vyhráváš!' : 'Prohráváš..'}
       </div>
     );
   }
