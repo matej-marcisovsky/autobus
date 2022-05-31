@@ -31,11 +31,13 @@ export default class extends React.Component<Props> {
       return null;
     }
 
+    const currentPlayer = this.context.currentPlayer();
+
     return (
       <div className="container block is-flex is-flex-direction-column player">
         <div className="is-flex">
-          <StockComponent cards={player.stock} hideFace={false} isDraggable={!isEnemy && this.context.isPlayersTurn()} isDroppable={!isEnemy}/>
-          <DelimiterComponent/>
+          <StockComponent cards={player.stock} isDraggable={!isEnemy && this.context.isPlayersTurn()} isDroppable={!isEnemy}/>
+          <DelimiterComponent highlight={currentPlayer && currentPlayer.id === player.id}/>
           {this.renderPiles()}
         </div>
         {this.renderHand()}
@@ -64,7 +66,7 @@ export default class extends React.Component<Props> {
           }
 
           return (
-            <CardComponent key={index} card={card} isDraggable={this.context.isPlayersTurn()} isDroppable={false} inPile={false} inStock={false} hideFace={false}/>
+            <CardComponent key={index} card={card} isDraggable={this.context.isPlayersTurn()} isDroppable={false} inPile={false} inStock={false}/>
           );
         })}
       </div>
@@ -87,7 +89,7 @@ export default class extends React.Component<Props> {
         onDragOver={(event) => this.onDragOver(event)}
         onDrop={(event) => this.onDrop(event)}
       >
-        {!!pile.length && <CardComponent card={pile[0]} isDraggable={!this.props.isEnemy && this.context.isPlayersTurn()} isDroppable={false} inPile={true} inStock={false} hideFace={false}/>}
+        {!!pile.length && <CardComponent card={pile[0]} isDraggable={!this.props.isEnemy && this.context.isPlayersTurn()} isDroppable={false} inPile={true} inStock={false}/>}
         <CounterComponent>{pile.length}</CounterComponent>
       </div>
     );

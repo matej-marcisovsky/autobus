@@ -12,8 +12,7 @@ interface Props {
   isDraggable: boolean,
   isDroppable: boolean,
   inPile: boolean,
-  inStock: boolean,
-  hideFace: boolean
+  inStock: boolean
 }
 
 export default class extends React.Component<Props> {
@@ -42,12 +41,6 @@ export default class extends React.Component<Props> {
   }
 
   _renderFace() {
-    const { hideFace } = this.props;
-
-    if (hideFace) {
-      return null;
-    }
-
     return (
       <React.Fragment>
         <div className="playing-card__symbol is-flex is-flex-direction-column">

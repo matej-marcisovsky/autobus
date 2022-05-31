@@ -30,7 +30,7 @@ export default class extends React.Component<Props> {
   private renderStraight(straight: Card[], index: number) {
     return (
       <div key={index} className="straight mr-2" data-index={index}>
-        <CardComponent card={straight[straight.length - 1]} isDraggable={false} isDroppable={true} inPile={false} inStock={false} hideFace={false}/>
+        <CardComponent card={straight[straight.length - 1]} isDraggable={false} isDroppable={true} inPile={false} inStock={false}/>
       </div>
     );
   }

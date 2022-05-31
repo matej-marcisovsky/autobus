@@ -76,11 +76,11 @@ export default class extends React.Component<Props, State> {
     const { game, playerId } = this.state;
 
     return (
-      <div>
+      <>
         {this._renderCopyForm()}
         {this._renderInfoBar()}
         <GameComponent game={game} playerId={playerId} />
-      </div>
+      </>
     );
   }
 

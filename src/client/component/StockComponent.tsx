@@ -9,7 +9,6 @@ import CardComponent from "./CardComponent.js";
 
 interface Props {
   cards: Card[],
-  hideFace: boolean,
   isDraggable: boolean,
   isDroppable: boolean
 }
@@ -18,15 +17,15 @@ export default class extends React.Component<Props> {
   static contextType: React.Context<any> = GameContext;
 
   render() {
-    const { cards, hideFace, isDraggable, isDroppable } = this.props;
+    const { cards, isDraggable, isDroppable } = this.props;
 
     return (
       <div
         className="stock is-relative is-flex-shrink-0"
         onDragOver={(event) => this.onDragOver(event)}
         onDrop={(event) => this.onDrop(event)}>
-        <CardComponent card={cards[0]} inPile={false} inStock={true} isDraggable={isDraggable} isDroppable={isDroppable} hideFace={hideFace}/>
-        {isDroppable && <CounterComponent>{cards.length}</CounterComponent>}
+        <CardComponent card={cards[0]} inPile={false} inStock={true} isDraggable={isDraggable} isDroppable={isDroppable}/>
+        <CounterComponent>{cards.length}</CounterComponent>
       </div>
     );
   }

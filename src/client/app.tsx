@@ -68,6 +68,7 @@ emitter.on(ActionType.UpdateGame, () => ws.send(`${new Message(ActionType.Update
 const root = ReactDOMClient.createRoot(container);
 root.render(
   <GameContext.Provider value={{
+    currentPlayer: () => game && game.currentPlayer,
     emit: (eventName, data) => emitter.emit(eventName, data),
     isPlayersTurn: () => game && game.currentPlayer.id === playerId && !game.players.find((player) => !player.hasUser),
     on: (eventName, listener) => emitter.on(eventName, listener)

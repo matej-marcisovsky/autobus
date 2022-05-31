@@ -6,9 +6,7 @@ import GameActionType from "../GameActionType.js";
 import GameContext from "../GameContext.js";
 import Origin from "../../game/Origin.js";
 
-import DelimiterComponent from "./DelimiterComponent.js";
 import PlayerComponent from "./PlayerComponent.js";
-import StockComponent from "./StockComponent.js";
 import StraightsComponent from "./StraightsComponent.js";
 import ActionType from "../../ActionType.js";
 
@@ -36,9 +34,7 @@ export default class extends React.Component<Props> {
     return (
       <div className="is-flex is-justify-content-center is-flex-direction-column">
         <PlayerComponent player={game.players[playerId === 0 ? 1 : 0]} isEnemy={true}/>
-        <div className="container block is-flex is-flex-direction-row mb-6 app--middle">
-          <StockComponent cards={game.stock} hideFace={true} isDraggable={false} isDroppable={false}/>
-          <DelimiterComponent/>
+        <div className="container block is-flex is-flex-direction-row app--middle">
           <StraightsComponent straights={game.straights}/>
         </div>
         <PlayerComponent player={game.players[playerId]}/>
