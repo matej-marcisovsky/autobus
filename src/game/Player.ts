@@ -115,7 +115,9 @@ export default class Player {
 
     switch (origin) {
       case Origin.Hand:
-        return hand.splice(this.hand.indexOf(card), 1);
+        hand.splice(this.hand.indexOf(card), 1);
+
+        return;
       case Origin.Pile:
         const pile = piles.find(pile => pile.length && pile[0].isSame(card));
 

@@ -155,6 +155,10 @@ export default class Game {
       this.straights.push([card]);
       this.currentPlayer.removeCardFromOrigin(card, origin);
 
+      if (!this.currentPlayer.hand.length) {
+        this.drawCards();
+      }
+
       return;
     }
 
@@ -165,6 +169,10 @@ export default class Game {
     if (card.isNextRankOf(straight[straight.length - 1])) {
       straight.push(card);
       this.currentPlayer.removeCardFromOrigin(card, origin);
+
+      if (!this.currentPlayer.hand.length) {
+        this.drawCards();
+      }
 
       if (card.rank === Rank.King) {
         this.stock.push(...arrayShuffle(straight));
