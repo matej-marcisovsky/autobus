@@ -65,14 +65,17 @@ emitter.on(ActionType.NewGame, () => ws.send(`${new Message(ActionType.NewGame)}
 emitter.on(ActionType.JoinGame, (id) => ws.send(`${new Message(ActionType.JoinGame, 200, { id })}`));
 emitter.on(ActionType.UpdateGame, () => ws.send(`${new Message(ActionType.UpdateGame, 200, null, game)}`));
 
-const root = ReactDOMClient.createRoot(container);
-root.render(
-  <GameContext.Provider value={{
-    currentPlayer: () => game && game.currentPlayer,
-    emit: (eventName, data) => emitter.emit(eventName, data),
-    isPlayersTurn: () => game && game.currentPlayer.id === playerId && !game.players.find((player) => !player.hasUser),
-    on: (eventName, listener) => emitter.on(eventName, listener)
-  }}>
-    <AppComponent />
-  </GameContext.Provider>
-);
+ws.onopen = () => {
+  const root = ReactDOMClient.createRoot(container);
+
+  root.render(
+    <GameContext.Provider value={{
+      currentPlayer: () => game && game.currentPlayer,
+      emit: (eventName, data) => emitter.emit(eventName, data),
+      isPlayersTurn: () => game && game.currentPlayer.id === playerId && !game.players.find((player) => !player.hasUser),
+      on: (eventName, listener) => emitter.on(eventName, listener)
+    }}>
+      <AppComponent />
+    </GameContext.Provider>
+  );
+};

@@ -8,6 +8,8 @@ import GameComponent from "./GameComponent.js";
 import GameContext from "../GameContext.js";
 import Player from "../../game/Player.js";
 
+const QUERY_PARAM_NAME = 'id';
+
 interface Props { }
 
 interface State {
@@ -21,6 +23,10 @@ export default class extends React.Component<Props, State> {
 
   static contextType: React.Context<any> = GameContext;
 
+  get link() {
+    return `${location.origin}?${QUERY_PARAM_NAME}=${encodeURIComponent(this.state.game.id)}`;
+  }
+
   constructor(props) {
     super(props);
 
@@ -32,7 +38,7 @@ export default class extends React.Component<Props, State> {
   }
 
   componentDidCatch(error, errorInfo) {
-    alert(`${error.action}: ${error.status}`); // TODO Better error handling.
+    console.error(`${error.action}: ${error.status}`); // TODO Better error handling.
   }
 
   componentDidMount() {
@@ -41,6 +47,11 @@ export default class extends React.Component<Props, State> {
       playerId
     }));
     this.context.on(GameActionType.EndGame, (winner) => this.setState({ winner }));
+
+    const urlParams = new URLSearchParams(location.search);
+    if (urlParams.has(QUERY_PARAM_NAME)) {
+      this.context.emit(ActionType.JoinGame, urlParams.get(QUERY_PARAM_NAME));
+    }
   }
 
   render() {
@@ -104,7 +115,7 @@ export default class extends React.Component<Props, State> {
                   <input className="input" type="text" value={game.id} readOnly />
                 </div>
                 <div className="control">
-                  <button className="button is-info" onClick={() => this.onCopyGameId()}>Kopírovat do schránky</button>
+                  <button className="button is-info" onClick={() => this.onCopyGameLink()}>Kopírovat odkaz</button>
                 </div>
               </div>
             </div>
@@ -159,8 +170,8 @@ export default class extends React.Component<Props, State> {
     );
   }
 
-  onCopyGameId() {
-    navigator.clipboard.writeText(this.state.game.id);
+  onCopyGameLink() {
+    navigator.clipboard.writeText(this.link);
   }
 
   onJoinGame() {
