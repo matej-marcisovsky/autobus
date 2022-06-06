@@ -1,4 +1,5 @@
 import * as React from "react";
+import classNames from "classnames";
 
 import Player from "../../game/Player.js";
 import Card from "../../game/Card.js";
@@ -17,8 +18,20 @@ interface Props {
   player: Player,
 }
 
-export default class extends React.Component<Props> {
+interface State {
+  highlight?: number;
+}
+
+export default class extends React.Component<Props, State> {
   static contextType: React.Context<any> = GameContext;
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      highlight: null
+    };
+  }
 
   componentDidMount() {
     this.context.on(GameActionType.MoveCardToStock, (card) => this.onMoveCardToStock(card));
@@ -66,7 +79,7 @@ export default class extends React.Component<Props> {
           }
 
           return (
-            <CardComponent key={index} card={card} isDraggable={this.context.isPlayersTurn()} isDroppable={false} inPile={false} inStock={false}/>
+            <CardComponent key={index} card={card} isDraggable={this.context.isPlayersTurn()} inPile={false} inStock={false}/>
           );
         })}
       </div>
@@ -85,27 +98,43 @@ export default class extends React.Component<Props> {
     return (
       <div
         key={index}
-        className="pile card mr-2"
-        onDragOver={(event) => this.onDragOver(event)}
+        className={classNames('pile card mr-2', {
+          'is-highlighted': this.state.highlight === index
+        })}
+        onDragOver={(event) => this.onDragOver(event, index)}
         onDrop={(event) => this.onDrop(event)}
-      >
-        {!!pile.length && <CardComponent card={pile[0]} isDraggable={!this.props.isEnemy && this.context.isPlayersTurn()} isDroppable={false} inPile={true} inStock={false}/>}
+        onDragLeave={() => this.onDragLeave()}>
+        {!!pile.length && <CardComponent card={pile[0]} isDraggable={!this.props.isEnemy && this.context.isPlayersTurn()} inPile={true} inStock={false}/>}
         <CounterComponent>{pile.length}</CounterComponent>
       </div>
     );
   }
 
-  onDragOver(event) {
+  onDragOver(event, index) {
     event.preventDefault();
 
     if (this.props.isEnemy || !this.context.isPlayersTurn()) {
       event.dataTransfer.dropEffect = 'none';
+
+      if (this.state.highlight !== null) {
+        this.setState({
+          highlight: null
+        });
+      }
+
       return;
     }
 
     try {
       if (event.dataTransfer.types.includes('inpile')) {
         event.dataTransfer.dropEffect = 'none';
+
+        if (this.state.highlight !== null) {
+          this.setState({
+            highlight: null
+          });
+        }
+
         return;
       }
     } catch (error) {
@@ -113,11 +142,31 @@ export default class extends React.Component<Props> {
     }
 
     event.dataTransfer.dropEffect = 'move';
+
+    if (this.state.highlight === null) {
+      this.setState({
+        highlight: index
+      });
+    }
+  }
+
+  onDragLeave() {
+    if (this.state.highlight !== null) {
+      this.setState({
+        highlight: null
+      });
+    }
   }
 
   onDrop(event) {
     if (this.props.isEnemy || !this.context.isPlayersTurn()) {
       return;
+    }
+
+    if (this.state.highlight !== null) {
+      this.setState({
+        highlight: null
+      });
     }
 
     try {

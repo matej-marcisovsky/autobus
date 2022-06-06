@@ -10,13 +10,24 @@ import Suit from "../../game/Suit.js";
 interface Props {
   card: Card,
   isDraggable: boolean,
-  isDroppable: boolean,
   inPile: boolean,
   inStock: boolean
 }
 
-export default class extends React.Component<Props> {
+interface State {
+  highlight: boolean;
+}
+
+export default class extends React.Component<Props, State> {
   static contextType: React.Context<any> = GameContext;
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      highlight: false
+    };
+  }
 
   render() {
     const { card, isDraggable } = this.props;
@@ -29,10 +40,10 @@ export default class extends React.Component<Props> {
       <div
         className={classNames('card playing-card', {
           'is-clickable': isDraggable,
+          'is-highlighted': this.state.highlight,
           'playing-card--red': card.color === Color.Red
         })}
         onDragStart={(event) => this.onDragStart(event)}
-        onDragOver={(event) => this.onDragOver(event)}
         draggable={isDraggable}
       >
         {this._renderFace()}
@@ -143,14 +154,5 @@ export default class extends React.Component<Props> {
     if (inStock) {
       event.dataTransfer.setData('instock', JSON.stringify(true));
     }
-  }
-
-  onDragOver(event) {
-    if (!this.context.isPlayersTurn()) {
-      event.dataTransfer.dropEffect = 'none';
-      return;
-    }
-
-    event.dataTransfer.dropEffect = this.props.isDroppable ? 'move' : 'none';
   }
 }

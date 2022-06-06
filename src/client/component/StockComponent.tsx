@@ -1,4 +1,5 @@
 import * as React from "react";
+import classNames from "classnames";
 
 import GameActionType from "../GameActionType.js";
 import GameContext from "../GameContext.js";
@@ -13,18 +14,34 @@ interface Props {
   isDroppable: boolean
 }
 
-export default class extends React.Component<Props> {
+interface State {
+  highlight: boolean;
+}
+
+export default class extends React.Component<Props, State> {
   static contextType: React.Context<any> = GameContext;
 
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      highlight: false
+    };
+  }
+
   render() {
-    const { cards, isDraggable, isDroppable } = this.props;
+    const { cards, isDraggable } = this.props;
 
     return (
       <div
-        className="stock is-relative is-flex-shrink-0"
+        className={classNames('stock is-relative is-flex-shrink-0', {
+          'is-highlighted': this.state.highlight
+        })}
         onDragOver={(event) => this.onDragOver(event)}
+        onDragLeave={() => this.onDragLeave()}
+        onDragEnd={() => this.onDragLeave()}
         onDrop={(event) => this.onDrop(event)}>
-        <CardComponent card={cards[0]} inPile={false} inStock={true} isDraggable={isDraggable} isDroppable={isDroppable}/>
+        <CardComponent card={cards[0]} inPile={false} inStock={true} isDraggable={isDraggable}/>
         <CounterComponent>{cards.length}</CounterComponent>
       </div>
     );
@@ -33,19 +50,42 @@ export default class extends React.Component<Props> {
   onDragOver(event) {
     event.preventDefault();
 
-    if (!this.context.isPlayersTurn()) {
+    if (!this.context.isPlayersTurn() || !this.props.isDroppable) {
       event.dataTransfer.dropEffect = 'none';
+      if (this.state.highlight) {
+        this.setState({
+          highlight: false
+        });
+      }
       return;
     }
 
-    if (this.props.isDroppable) {
-      event.dataTransfer.dropEffect = 'move';
+    event.dataTransfer.dropEffect = 'move';
+
+    if (!this.state.highlight) {
+      this.setState({
+        highlight: true
+      });
+    }
+  }
+
+  onDragLeave() {
+    if (this.state.highlight) {
+      this.setState({
+        highlight: false
+      });
     }
   }
 
   onDrop(event) {
     if (!this.context.isPlayersTurn()) {
       return;
+    }
+
+    if (this.state.highlight) {
+      this.setState({
+        highlight: false
+      });
     }
 
     try {

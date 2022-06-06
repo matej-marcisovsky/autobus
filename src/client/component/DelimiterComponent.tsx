@@ -9,7 +9,7 @@ export default class extends React.Component<Props> {
   render() {
     return (
       <div className={classNames('delimiter mx-5', {
-        ['delimiter--highlight']: this.props.highlight
+        'is-highlighted': this.props.highlight
       })}/>
     );
   }
