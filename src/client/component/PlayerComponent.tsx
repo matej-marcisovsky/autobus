@@ -79,7 +79,7 @@ export default class extends React.Component<Props, State> {
           }
 
           return (
-            <CardComponent key={index} card={card} isDraggable={this.context.isPlayersTurn()} inPile={false} inStock={false}/>
+            <CardComponent key={index} card={card} isDraggable={this.context.isPlayersTurn()} inHand={true}/>
           );
         })}
       </div>
@@ -104,7 +104,7 @@ export default class extends React.Component<Props, State> {
         onDragOver={(event) => this.onDragOver(event, index)}
         onDrop={(event) => this.onDrop(event)}
         onDragLeave={() => this.onDragLeave()}>
-        {!!pile.length && <CardComponent card={pile[0]} isDraggable={!this.props.isEnemy && this.context.isPlayersTurn()} inPile={true} inStock={false}/>}
+        {!!pile.length && <CardComponent card={pile[0]} isDraggable={!this.props.isEnemy && this.context.isPlayersTurn()} inPile={true}/>}
         <CounterComponent>{pile.length}</CounterComponent>
       </div>
     );

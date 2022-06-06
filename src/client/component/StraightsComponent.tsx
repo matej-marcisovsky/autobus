@@ -51,7 +51,7 @@ export default class extends React.Component<Props, State> {
           'is-highlighted': this.state.highlight === index
         })}
         data-index={index}>
-        <CardComponent card={straight[straight.length - 1]} isDraggable={false} inPile={false} inStock={false}/>
+        <CardComponent card={straight[straight.length - 1]}/>
       </div>
     );
   }

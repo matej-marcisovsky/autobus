@@ -9,9 +9,10 @@ import Suit from "../../game/Suit.js";
 
 interface Props {
   card: Card,
-  isDraggable: boolean,
-  inPile: boolean,
-  inStock: boolean
+  isDraggable?: boolean,
+  inHand?: boolean,
+  inPile?: boolean,
+  inStock?: boolean
 }
 
 interface State {
@@ -19,7 +20,16 @@ interface State {
 }
 
 export default class extends React.Component<Props, State> {
+  private rootRef = React.createRef<HTMLDivElement>();
+  private tempCardElm: HTMLDivElement;
+
   static contextType: React.Context<any> = GameContext;
+
+  componentWillUnmount() {
+    if (this.tempCardElm) {
+      this.tempCardElm.remove();
+    }
+  }
 
   constructor(props) {
     super(props);
@@ -38,12 +48,14 @@ export default class extends React.Component<Props, State> {
 
     return (
       <div
+        ref={this.rootRef}
         className={classNames('card playing-card', {
           'is-clickable': isDraggable,
           'is-highlighted': this.state.highlight,
           'playing-card--red': card.color === Color.Red
         })}
         onDragStart={(event) => this.onDragStart(event)}
+        onDragEnd={() => this.onDragEnd()}
         draggable={isDraggable}
       >
         {this._renderFace()}
@@ -142,17 +154,38 @@ export default class extends React.Component<Props, State> {
   }
 
   onDragStart(event) {
-    const { card, inPile, inStock } = this.props;
+    const { card, inHand, inPile, inStock } = this.props;
 
     event.dataTransfer.setData('card', JSON.stringify(card));
     event.dataTransfer.effectAllowed = 'move';
 
-    if (inPile) {
-      event.dataTransfer.setData('inpile', JSON.stringify(true));
+    if (this.tempCardElm) {
+      this.tempCardElm.remove();
     }
 
-    if (inStock) {
+    if (inPile) {
+      event.dataTransfer.setData('inpile', JSON.stringify(true));
+    } else if (inStock) {
       event.dataTransfer.setData('instock', JSON.stringify(true));
+    } else if (inHand) {
+      const { current: cardElm } = this.rootRef;
+
+      if (!cardElm) {
+        return;
+      }
+
+      this.tempCardElm = cardElm.cloneNode(true) as HTMLDivElement;
+      this.tempCardElm.classList.add('playing-card--temp');
+
+      document.body.appendChild(this.tempCardElm);
+
+      event.dataTransfer.setDragImage(this.tempCardElm, 50, 50)
+    }
+  }
+
+  onDragEnd() {
+    if (this.tempCardElm) {
+      this.tempCardElm.remove();
     }
   }
 }

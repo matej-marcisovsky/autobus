@@ -41,7 +41,7 @@ export default class extends React.Component<Props, State> {
         onDragLeave={() => this.onDragLeave()}
         onDragEnd={() => this.onDragLeave()}
         onDrop={(event) => this.onDrop(event)}>
-        <CardComponent card={cards[0]} inPile={false} inStock={true} isDraggable={isDraggable}/>
+        <CardComponent card={cards[0]} inStock={true} isDraggable={isDraggable}/>
         <CounterComponent>{cards.length}</CounterComponent>
       </div>
     );
