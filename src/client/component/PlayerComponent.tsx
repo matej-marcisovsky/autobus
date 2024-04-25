@@ -29,9 +29,9 @@ function PlayerComponent({ isEnemy, player }: Props) {
 
   const [highlight, setHighlight] = useState<number | null>(null);
 
-  useEffect(() => {
-    context?.on(GameActionType.MoveCardToStock, (card: Card) => {
-      if (!context.isPlayersTurn() || isEnemy) {
+  const onMoveCardToStock = useCallback(
+    (card: Card) => {
+      if (!context?.isPlayersTurn() || isEnemy) {
         return;
       }
 
@@ -44,8 +44,17 @@ function PlayerComponent({ isEnemy, player }: Props) {
       } catch (error) {
         console.error(error);
       }
-    });
-  }, [context, isEnemy, player]);
+    },
+    [context, isEnemy, player],
+  );
+
+  useEffect(() => {
+    context?.on(GameActionType.MoveCardToStock, onMoveCardToStock);
+
+    return () => {
+      context?.off(GameActionType.MoveCardToStock, onMoveCardToStock);
+    };
+  }, [context, isEnemy, onMoveCardToStock, player]);
 
   const onDragOver = useCallback(
     (event: DragEvent<HTMLDivElement>) => {

@@ -88,6 +88,8 @@ ws.onopen = () => {
           !game.players.find(player => !player.hasUser),
         on: (eventName: string, listener: (data: any) => void) =>
           emitter.on(eventName, listener),
+        off: (eventName: string, listener: (data: any) => void) =>
+          emitter.off(eventName, listener),
       }}
     >
       <AppComponent />

@@ -1,4 +1,4 @@
-import { memo, useContext, useEffect, useState } from 'react';
+import { memo, useCallback, useContext, useEffect, useState } from 'react';
 
 import { PlayerComponent } from './PlayerComponent.js';
 import { StraightsComponent } from './StraightsComponent.js';
@@ -19,57 +19,66 @@ function GameComponent({ game, playerId }: Props) {
 
   const [key, forceUpdate] = useState(0);
 
-  useEffect(() => {
-    context?.on(GameActionType.EndTurn, () => {
+  const onEndTurn = useCallback(() => {
+    if (!context?.isPlayersTurn()) {
+      return;
+    }
+
+    try {
+      game.endTurn();
+      context?.emit(ActionType.UpdateGame);
+      forceUpdate(key + 1);
+    } catch (error) {
+      console.error(error);
+    }
+  }, [context, game, key]);
+
+  const onMoveCardToStraight = useCallback(
+    ({
+      card,
+      origin,
+      straightIndex,
+    }: {
+      card: Card;
+      origin: Origin;
+      straightIndex: number;
+    }) => {
       if (!context?.isPlayersTurn()) {
         return;
       }
 
+      let straight: Card[] | undefined;
+
+      if (straightIndex !== null) {
+        straight = game.straights[straightIndex];
+      }
+
       try {
-        game.endTurn();
+        game.moveCardToStraight(
+          game.currentPlayer?.findCardInOrigin(card, origin) as Card,
+          origin,
+          straight,
+        );
+
         context?.emit(ActionType.UpdateGame);
         forceUpdate(key + 1);
       } catch (error) {
         console.error(error);
       }
-    });
+    },
+    [context, game, key],
+  );
 
-    context?.on(
-      GameActionType.MoveCardToStraight,
-      ({
-        card,
-        origin,
-        straightIndex,
-      }: {
-        card: Card;
-        origin: Origin;
-        straightIndex: number;
-      }) => {
-        if (!context?.isPlayersTurn()) {
-          return;
-        }
+  useEffect(() => {
+    context?.on(GameActionType.EndTurn, onEndTurn);
 
-        let straight: Card[] | undefined;
+    context?.on(GameActionType.MoveCardToStraight, onMoveCardToStraight);
 
-        if (straightIndex !== null) {
-          straight = game.straights[straightIndex];
-        }
-
-        try {
-          game.moveCardToStraight(
-            game.currentPlayer?.findCardInOrigin(card, origin) as Card,
-            origin,
-            straight,
-          );
-
-          context?.emit(ActionType.UpdateGame);
-          forceUpdate(key + 1);
-        } catch (error) {
-          console.error(error);
-        }
-      },
-    );
-  }, [context, game, key]);
+    return () => {
+      context?.off(GameActionType.EndTurn, onEndTurn);
+      context?.off(GameActionType.MoveCardToStraight, onMoveCardToStraight);
+    };
+  }, [context, game, key, onEndTurn, onMoveCardToStraight]);
 
   if (!game) {
     return null;

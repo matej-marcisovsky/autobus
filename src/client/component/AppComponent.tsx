@@ -35,23 +35,32 @@ function AppComponent() {
     [game],
   );
 
+  const onUpdateState = useCallback(
+    ({ game, playerId }: { game: Game; playerId: number }) => {
+      setGame(game);
+      setPlayerId(playerId);
+    },
+    [],
+  );
+
+  const onEndGame = useCallback((winner: Player) => {
+    setWinner(winner);
+  }, []);
+
   useEffect(() => {
-    context?.on(
-      GameActionType.UpdateState,
-      ({ game, playerId }: { game: Game; playerId: number }) => {
-        setGame(game);
-        setPlayerId(playerId);
-      },
-    );
-    context?.on(GameActionType.EndGame, (winner: Player) => {
-      setWinner(winner);
-    });
+    context?.on(GameActionType.UpdateState, onUpdateState);
+    context?.on(GameActionType.EndGame, onEndGame);
 
     const urlParams = new URLSearchParams(location.search);
     if (urlParams.has(QUERY_PARAM_NAME)) {
       context?.emit(ActionType.JoinGame, urlParams.get(QUERY_PARAM_NAME));
     }
-  }, [context]);
+
+    return () => {
+      context?.off(GameActionType.UpdateState, onUpdateState);
+      context?.off(GameActionType.EndGame, onEndGame);
+    };
+  }, [context, onEndGame, onUpdateState]);
 
   const onJoinGame = useCallback(() => {
     const { current: idInput } = idRef;
