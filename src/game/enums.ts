@@ -23,6 +23,7 @@ export enum Rank {
   Jack = 'jack',
   Queen = 'queen',
   King = 'king',
+  Joker = 'joker',
 }
 
 export enum Suit {

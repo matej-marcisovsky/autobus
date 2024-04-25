@@ -71,7 +71,9 @@ function StraightsComponent({ straights }: Props) {
       }
 
       try {
-        const { suit, rank } = JSON.parse(event.dataTransfer.getData('card'));
+        const { suit, rank, isJoker } = JSON.parse(
+          event.dataTransfer.getData('card'),
+        );
         let straightIndex = null;
         let origin = Origin.Hand;
 
@@ -97,7 +99,7 @@ function StraightsComponent({ straights }: Props) {
         }
 
         context.emit(GameActionType.MoveCardToStraight, {
-          card: new Card(suit, rank),
+          card: new Card(suit, rank, isJoker),
           origin,
           straightIndex,
         });

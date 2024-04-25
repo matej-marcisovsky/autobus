@@ -5,7 +5,6 @@ import { Card } from './Card.js';
 import { generate } from './Deck.js';
 import { Rank, type Origin, type Suit } from './enums.js';
 import { InvalidGameMove, UnknownPlayer } from './Errors.js';
-import { Joker } from './Joker.js';
 import { Player, ERROR_CARD_NOT_IN_ORIGIN } from './Player.js';
 
 const MAX_AGE = 1000 * 60 * 60;
@@ -38,18 +37,22 @@ export class Game {
       _straights: Card[][] = [];
 
     stock.forEach(card => {
-      _stock.push(new Card(card.suit as Suit, card.rank as Rank));
+      _stock.push(new Card(card.suit as Suit, card.rank as Rank, card.isJoker));
     });
 
     players.forEach(player => {
       const playerStock: Card[] = [];
       player.stock.forEach(card => {
-        playerStock.push(new Card(card.suit as Suit, card.rank as Rank));
+        playerStock.push(
+          new Card(card.suit as Suit, card.rank as Rank, card.isJoker),
+        );
       });
 
       const playerHand: Card[] = [];
       player.hand.forEach(card => {
-        playerHand.push(new Card(card.suit as Suit, card.rank as Rank));
+        playerHand.push(
+          new Card(card.suit as Suit, card.rank as Rank, card.isJoker),
+        );
       });
 
       const playerPiles: Card[][] = [];
@@ -57,7 +60,9 @@ export class Game {
         const playerPile: Card[] = [];
 
         pile.forEach(card => {
-          playerPile.push(new Card(card.suit as Suit, card.rank as Rank));
+          playerPile.push(
+            new Card(card.suit as Suit, card.rank as Rank, card.isJoker),
+          );
         });
 
         playerPiles.push(playerPile);
@@ -78,7 +83,9 @@ export class Game {
       const _straight: Card[] = [];
 
       straight.forEach(card => {
-        _straight.push(new Card(card.suit as Suit, card.rank as Rank));
+        _straight.push(
+          new Card(card.suit as Suit, card.rank as Rank, card.isJoker),
+        );
       });
 
       _straights.push(_straight);
@@ -188,9 +195,11 @@ export class Game {
     }
 
     // Starting new straight.
-    if ((card.rank === Rank.Ace || card instanceof Joker) && !straight) {
+    if ((card.rank === Rank.Ace || card.isUnusedJoker) && !straight) {
       this.straights.push([card]);
       this.currentPlayer.removeCardFromOrigin(card, origin);
+
+      card.rank = Rank.Ace;
 
       if (!this.currentPlayer.hand.length) {
         this.drawCards();
@@ -203,9 +212,12 @@ export class Game {
       throw new InvalidGameMove(ERROR_NO_STRAIGHT);
     }
 
-    if (card.isNextRankOf(straight[straight.length - 1])) {
+    const topCard = straight[straight.length - 1];
+    if (card.isNextRankOf(topCard)) {
       straight.push(card);
       this.currentPlayer.removeCardFromOrigin(card, origin);
+
+      card.rank = topCard.nextRank;
 
       if (!this.currentPlayer.hand.length) {
         this.drawCards();

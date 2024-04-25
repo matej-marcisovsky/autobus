@@ -12,7 +12,6 @@ export class Player {
   readonly id: number;
   stock: Card[];
   hand: Card[];
-  // jokers: Joker[] = [];
   piles: Card[][] = [];
   hasUser: boolean = false;
 

@@ -1,10 +1,9 @@
 import arrayShuffle from 'array-shuffle';
 
 import { Card } from './Card.js';
-// import Joker from "./Joker.js";
 import { Rank, Suit } from './enums.js';
 
-// const JOKERS_PER_DECK = 2;
+const JOKERS_PER_DECK = 2;
 const DECK_MULTIPLIER = 2;
 
 export function generate() {
@@ -27,20 +26,14 @@ export function generate() {
         Rank.Queen,
         Rank.King,
       ]) {
-        cards.push(new Card(suit, rank));
+        cards.push(new Card(suit, rank, false));
       }
+    }
+
+    for (let joker = 0; joker < JOKERS_PER_DECK; joker++) {
+      cards.push(new Card(Suit.Club, Rank.Joker, true));
     }
   }
 
   return arrayShuffle(cards);
 }
-
-// export function addJokers(cards: Card[]) {
-//   for (let i = 0; i < DECK_MULTIPLIER; i++) {
-//     for (let j = 0; j < JOKERS_PER_DECK; j++) {
-//       cards.push(new Joker());
-//     }
-//   }
-
-//   return arrayShuffle(cards);
-// }

@@ -60,9 +60,14 @@ function StockComponent({ cards, isDraggable, isDroppable }: Props) {
       }
 
       try {
-        const { suit, rank } = JSON.parse(event.dataTransfer.getData('card'));
+        const { suit, rank, isJoker } = JSON.parse(
+          event.dataTransfer.getData('card'),
+        );
 
-        context.emit(GameActionType.MoveCardToStock, new Card(suit, rank));
+        context.emit(
+          GameActionType.MoveCardToStock,
+          new Card(suit, rank, isJoker),
+        );
       } catch (error) {
         console.error(error);
       }

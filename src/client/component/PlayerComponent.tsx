@@ -102,10 +102,15 @@ function PlayerComponent({ isEnemy, player }: Props) {
       }
 
       try {
-        const { suit, rank } = JSON.parse(event.dataTransfer.getData('card'));
+        const { suit, rank, isJoker } = JSON.parse(
+          event.dataTransfer.getData('card'),
+        );
 
         player.moveCardToOrigin(
-          player.findCardInOrigin(new Card(suit, rank), Origin.Hand) as Card,
+          player.findCardInOrigin(
+            new Card(suit, rank, isJoker),
+            Origin.Hand,
+          ) as Card,
           Origin.Pile,
         );
         context?.emit(GameActionType.EndTurn);

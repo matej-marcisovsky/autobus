@@ -55,6 +55,9 @@ function getRankString(rank: Rank) {
     case Rank.King:
       code = [75];
       break;
+    case Rank.Joker:
+      code = [191];
+      break;
   }
 
   return String.fromCharCode(...code);
@@ -135,25 +138,40 @@ function CardComponent({ card, isDraggable, inHand, inPile, inStock }: Props) {
     return null;
   }
 
+  const { color, rank, suit, isJoker, isUnusedJoker } = card;
+
   return (
     <div
       ref={rootRef}
       className={classNames('card playing-card', {
         'is-clickable': isDraggable,
-        'playing-card--red': card.color === Color.Red,
+        'playing-card--red': color === Color.Red,
+        'playing-card--is-joker': isJoker,
       })}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       draggable={isDraggable}
     >
       <div className='playing-card__symbol is-flex is-flex-direction-column'>
-        <span className='playing-card__rank'>{getRankString(card.rank)}</span>
-        <span className='playing-card__suit'>{getSuitString(card.suit)}</span>
+        <span
+          className={classNames({
+            'playing-card__rank': true,
+            'playing-card__rank--is-joker': isUnusedJoker,
+          })}
+        >
+          {getRankString(rank)}
+        </span>
+        {!isJoker && (
+          <span className='playing-card__suit'>{getSuitString(suit)}</span>
+        )}
       </div>
       <div className='playing-card__symbol playing-card__symbol--bottom is-flex is-flex-direction-column'>
-        <span className='playing-card__rank'>{getRankString(card.rank)}</span>
-        <span className='playing-card__suit'>{getSuitString(card.suit)}</span>
+        <span className='playing-card__rank'>{getRankString(rank)}</span>
+        {!isJoker && (
+          <span className='playing-card__suit'>{getSuitString(suit)}</span>
+        )}
       </div>
+      {isJoker && <span className='playing-card__joker'>🂿</span>}
     </div>
   );
 }

@@ -109,6 +109,25 @@ div {
       font-family: 'Noto Sans Symbols 2', sans-serif;
       line-height: 30px;
     }
+
+    &rank {
+      &--is-joker {
+        transform: scale(-1, -1);
+      }
+    }
+
+    &joker {
+      font-size: 96px;
+      line-height: 1;
+    }
+  }
+
+  &--is-joker {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    color: #daa520;
   }
 }
 
