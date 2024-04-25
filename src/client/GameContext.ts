@@ -1,10 +1,10 @@
-import * as React from "react";
+import { createContext } from 'react';
 
 interface GameContextInterface {
-  currentPlayer: Function,
-  emit: Function,
-  isPlayersTurn: Function
-  on: Function,
+  currentPlayer: Function;
+  emit: Function;
+  isPlayersTurn: Function;
+  on: Function;
 }
 
-export default React.createContext<GameContextInterface | null>(null);
+export const GameContext = createContext<GameContextInterface | null>(null);

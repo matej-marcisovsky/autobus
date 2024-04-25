@@ -1,182 +1,167 @@
-import * as React from "react";
-import classNames from "classnames";
+import classNames from 'classnames';
+import {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
-import ActionType from "../../ActionType.js";
-import Game from "../../game/Game.js";
-import GameActionType from "../GameActionType.js";
-import GameComponent from "./GameComponent.js";
-import GameContext from "../GameContext.js";
-import Player from "../../game/Player.js";
+import { GameComponent } from './GameComponent.js';
+import { ActionType } from '../../ActionType.js';
+import type { Game } from '../../game/Game.js';
+import type { Player } from '../../game/Player.js';
+import { GameActionType } from '../GameActionType.js';
+import { GameContext } from '../GameContext.js';
 
 const QUERY_PARAM_NAME = 'id';
 
-interface Props { }
+function AppComponent() {
+  const context = useContext(GameContext);
 
-interface State {
-  game?: Game;
-  playerId?: number;
-  winner?: Player;
-}
+  const idRef = useRef<HTMLInputElement>(null);
 
-export default class extends React.Component<Props, State> {
-  private idRef = React.createRef<HTMLInputElement>();
+  const [game, setGame] = useState<Game>();
 
-  static contextType: React.Context<any> = GameContext;
+  const [playerId, setPlayerId] = useState<number>();
 
-  get link() {
-    return `${location.origin}?${QUERY_PARAM_NAME}=${encodeURIComponent(this.state.game.id)}`;
-  }
+  const [winner, setWinner] = useState<Player>();
 
-  constructor(props) {
-    super(props);
+  const link = useMemo(
+    () =>
+      `${location.origin}?${QUERY_PARAM_NAME}=${encodeURIComponent(game?.id as string)}`,
+    [game],
+  );
 
-    this.state = {
-      game: null,
-      playerId: null,
-      winner: null
-    };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.error(`${error.action}: ${error.status}`); // TODO Better error handling.
-  }
-
-  componentDidMount() {
-    this.context.on(GameActionType.UpdateState, ({ game, playerId }) => this.setState({
-      game,
-      playerId
-    }));
-    this.context.on(GameActionType.EndGame, (winner) => this.setState({ winner }));
+  useEffect(() => {
+    context?.on(
+      GameActionType.UpdateState,
+      ({ game, playerId }: { game: Game; playerId: number }) => {
+        setGame(game);
+        setPlayerId(playerId);
+      },
+    );
+    context?.on(GameActionType.EndGame, (winner: Player) => {
+      setWinner(winner);
+    });
 
     const urlParams = new URLSearchParams(location.search);
     if (urlParams.has(QUERY_PARAM_NAME)) {
-      this.context.emit(ActionType.JoinGame, urlParams.get(QUERY_PARAM_NAME));
+      context?.emit(ActionType.JoinGame, urlParams.get(QUERY_PARAM_NAME));
     }
-  }
+  }, [context]);
 
-  render() {
-    return (
-      <div className="container is-relative">
-        {this._renderEndNotification()}
-        {this.state.game ? this._renderGame() : this._renderForm()}
-      </div>
-    );
-  }
+  const onJoinGame = useCallback(() => {
+    const { current: idInput } = idRef;
 
-  _renderEndNotification() {
-    const { playerId, winner } = this.state;
+    context?.emit(ActionType.JoinGame, idInput?.value);
+  }, [context]);
 
-    if (!winner) {
-      return null;
-    }
+  const onCopyGameLink = useCallback(() => {
+    navigator.clipboard.writeText(link);
+  }, [link]);
 
-    const success = winner.id === playerId;
+  const success = winner?.id === playerId;
+  const hasFreePlayer = game?.players.find(player => !player.hasUser);
 
-    return (
-      <div
-        className={classNames('notification', {
-          'is-danger': !success,
-          'is-success': success,
-        })}>
+  return (
+    <div className='container is-relative'>
+      {winner && (
+        <div
+          className={classNames('notification', {
+            'is-danger': !success,
+            'is-success': success,
+          })}
+        >
           {success ? 'Vyhráváš!' : 'Prohráváš..'}
-      </div>
-    );
-  }
-
-  _renderGame() {
-    const { game, playerId } = this.state;
-
-    return (
-      <>
-        {this._renderCopyForm()}
-        {this._renderInfoBar()}
-        <GameComponent game={game} playerId={playerId} />
-      </>
-    );
-  }
-
-  _renderCopyForm() {
-    const { game } = this.state;
-
-    if (!game.players.find((player) => !player.hasUser)) {
-      return null;
-    }
-
-    return (
-      <div className="box">
-        <nav className="level">
-          <div className="level-left">
-            Pošli kód spoluhráči!
-          </div>
-          <div className="level-right">
-            <div className="level-item">
-              <div className="field has-addons">
-                <div className="control">
-                  <input className="input" type="text" value={game.id} readOnly />
-                </div>
-                <div className="control">
-                  <button className="button is-info" onClick={() => this.onCopyGameLink()}>Kopírovat odkaz</button>
+        </div>
+      )}
+      {game ? (
+        <>
+          {hasFreePlayer && (
+            <>
+              <div className='box'>
+                <nav className='level'>
+                  <div className='level-left'>Pošli kód spoluhráči!</div>
+                  <div className='level-right'>
+                    <div className='level-item'>
+                      <div className='field has-addons'>
+                        <div className='control'>
+                          <input
+                            className='input'
+                            type='text'
+                            value={game.id}
+                            readOnly
+                          />
+                        </div>
+                        <div className='control'>
+                          <button
+                            className='button is-info'
+                            onClick={onCopyGameLink}
+                          >
+                            Kopírovat odkaz
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </nav>
+              </div>
+              <div className='box'>
+                <nav className='level'>
+                  <div className='level-left'>
+                    {context?.isPlayersTurn()
+                      ? 'Jsi na řadě.'
+                      : 'Hraje spoluhráč.'}
+                  </div>
+                  <div className='level-right' />
+                </nav>
+              </div>
+            </>
+          )}
+          <GameComponent game={game as Game} playerId={playerId as number} />
+        </>
+      ) : (
+        <div className='box'>
+          <nav className='level'>
+            <div className='level-left'>
+              <div className='level-item'>
+                <button
+                  className='button is-primary'
+                  onClick={() => context?.emit(ActionType.NewGame)}
+                >
+                  Nová hra
+                </button>
+              </div>
+            </div>
+            <div className='level-right'>
+              <div className='level-item'>
+                <div className='field has-addons'>
+                  <div className='control'>
+                    <input
+                      className='input'
+                      ref={idRef}
+                      type='text'
+                      placeholder='Kód hry'
+                    />
+                  </div>
+                  <div className='control'>
+                    <button className='button is-info' onClick={onJoinGame}>
+                      Připojit se
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </nav>
-      </div>
-    );
-  }
-
-  _renderForm() {
-    return (
-      <div className="box">
-        <nav className="level">
-          <div className="level-left">
-            <div className="level-item">
-              <button className="button is-primary" onClick={() => this.context.emit(ActionType.NewGame)}>Nová hra</button>
-            </div>
-          </div>
-          <div className="level-right">
-            <div className="level-item">
-              <div className="field has-addons">
-                <div className="control">
-                  <input className="input" ref={this.idRef} type="text" placeholder="Kód hry" />
-                </div>
-                <div className="control">
-                  <button className="button is-info" onClick={() => this.onJoinGame()}>Připojit se</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </nav>
-      </div>
-    );
-  }
-
-  _renderInfoBar() {
-    const { game } = this.state;
-
-    if (game.players.find((player) => !player.hasUser)) {
-      return null;
-    }
-
-    return (
-      <div className="box">
-        <nav className="level">
-          <div className="level-left">
-            {this.context.isPlayersTurn() ? 'Jsi na řadě.' : 'Hraje spoluhráč.'}
-          </div>
-          <div className="level-right" />
-        </nav>
-      </div>
-    );
-  }
-
-  onCopyGameLink() {
-    navigator.clipboard.writeText(this.link);
-  }
-
-  onJoinGame() {
-    const { current: idInput } = this.idRef;
-
-    this.context.emit(ActionType.JoinGame, idInput.value);
-  }
+          </nav>
+        </div>
+      )}
+    </div>
+  );
 }
+
+const MemoizedGameComponent = memo(AppComponent);
+
+export { MemoizedGameComponent as AppComponent };

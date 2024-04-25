@@ -1,11 +1,13 @@
-import * as React from "react";
+import { memo, type PropsWithChildren } from 'react';
 
-export default class extends React.PureComponent {
-  render() {
-    return (
-      <div className="counter is-flex is-justify-content-center">
-        <div className="tag is-info">{this.props.children}</div>
-      </div>
-    );
-  }
+function CounterComponent({ children }: PropsWithChildren) {
+  return (
+    <div className='counter is-flex is-justify-content-center'>
+      <div className='tag is-info'>{children}</div>
+    </div>
+  );
 }
+
+const MemoizedCounterComponent = memo(CounterComponent);
+
+export { MemoizedCounterComponent as CounterComponent };

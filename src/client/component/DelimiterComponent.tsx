@@ -1,16 +1,20 @@
-import * as React from "react";
-import classNames from "classnames";
+import classNames from 'classnames';
+import { memo } from 'react';
 
-interface Props {
-  highlight?: boolean
+type Props = {
+  highlight?: boolean;
+};
+
+function DelimiterComponent({ highlight }: Props) {
+  return (
+    <div
+      className={classNames('delimiter mx-5', {
+        'is-highlighted': highlight,
+      })}
+    />
+  );
 }
 
-export default class extends React.Component<Props> {
-  render() {
-    return (
-      <div className={classNames('delimiter mx-5', {
-        'is-highlighted': this.props.highlight
-      })}/>
-    );
-  }
-}
+const MemoizedDelimiterComponent = memo(DelimiterComponent);
+
+export { MemoizedDelimiterComponent as DelimiterComponent };

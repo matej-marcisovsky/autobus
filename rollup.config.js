@@ -6,16 +6,16 @@ export default {
   input: 'dist/client/app.js',
   output: {
     file: 'dist/client/static/bundle.js',
-    format: 'iife'
+    format: 'iife',
   },
   plugins: [
     replace({
       preventAssignment: true,
-      'process.env.NODE_ENV': JSON.stringify('development')
+      'process.env.NODE_ENV': JSON.stringify('development'),
     }),
     nodeResolve(),
     commonjs({
-      include: 'node_modules/**'
-    })
-  ]
+      include: 'node_modules/**',
+    }),
+  ],
 };

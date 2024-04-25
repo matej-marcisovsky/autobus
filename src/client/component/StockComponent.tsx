@@ -1,99 +1,91 @@
-import * as React from "react";
-import classNames from "classnames";
+import classNames from 'classnames';
+import { memo, useCallback, useContext, useState, type DragEvent } from 'react';
 
-import GameActionType from "../GameActionType.js";
-import GameContext from "../GameContext.js";
-import Card from "../../game/Card.js";
+import { CardComponent } from './CardComponent.js';
+import { CounterComponent } from './CounterComponent.js';
+import { Card } from '../../game/Card.js';
+import { GameActionType } from '../GameActionType.js';
+import { GameContext } from '../GameContext.js';
 
-import CounterComponent from "./CounterComponent.js";
-import CardComponent from "./CardComponent.js";
+type Props = {
+  cards: Card[];
+  isDraggable: boolean;
+  isDroppable: boolean;
+};
 
-interface Props {
-  cards: Card[],
-  isDraggable: boolean,
-  isDroppable: boolean
-}
+function StockComponent({ cards, isDraggable, isDroppable }: Props) {
+  const context = useContext(GameContext);
 
-interface State {
-  highlight: boolean;
-}
+  const [highlight, setHighlight] = useState(false);
 
-export default class extends React.Component<Props, State> {
-  static contextType: React.Context<any> = GameContext;
+  const onDragOver = useCallback(
+    (event: DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
 
-  constructor(props) {
-    super(props);
+      if (!context?.isPlayersTurn() || !isDroppable) {
+        event.dataTransfer.dropEffect = 'none';
+        if (highlight) {
+          setHighlight(false);
+        }
 
-    this.state = {
-      highlight: false
-    };
-  }
-
-  render() {
-    const { cards, isDraggable } = this.props;
-
-    return (
-      <div
-        className={classNames('stock is-relative is-flex-shrink-0', {
-          'is-highlighted': this.state.highlight
-        })}
-        onDragOver={(event) => this.onDragOver(event)}
-        onDragLeave={() => this.onDragLeave()}
-        onDragEnd={() => this.onDragLeave()}
-        onDrop={(event) => this.onDrop(event)}>
-        <CardComponent card={cards[0]} inStock={true} isDraggable={isDraggable}/>
-        <CounterComponent>{cards.length}</CounterComponent>
-      </div>
-    );
-  }
-
-  onDragOver(event) {
-    event.preventDefault();
-
-    if (!this.context.isPlayersTurn() || !this.props.isDroppable) {
-      event.dataTransfer.dropEffect = 'none';
-      if (this.state.highlight) {
-        this.setState({
-          highlight: false
-        });
+        return;
       }
-      return;
-    }
 
-    event.dataTransfer.dropEffect = 'move';
+      event.dataTransfer.dropEffect = 'move';
 
-    if (!this.state.highlight) {
-      this.setState({
-        highlight: true
-      });
-    }
-  }
+      if (!highlight) {
+        setHighlight(true);
+      }
+    },
+    [context, highlight, isDroppable],
+  );
 
-  onDragLeave() {
-    if (this.state.highlight) {
-      this.setState({
-        highlight: false
-      });
-    }
-  }
+  const onDragLeave = useCallback(
+    (event: DragEvent<HTMLDivElement>) => {
+      if (highlight) {
+        setHighlight(false);
+      }
+    },
+    [highlight],
+  );
 
-  onDrop(event) {
-    if (!this.context.isPlayersTurn()) {
-      return;
-    }
+  const onDrop = useCallback(
+    (event: DragEvent<HTMLDivElement>) => {
+      if (!context?.isPlayersTurn()) {
+        return;
+      }
 
-    if (this.state.highlight) {
-      this.setState({
-        highlight: false
-      });
-    }
+      if (highlight) {
+        setHighlight(false);
+      }
 
-    try {
-      const { suit, rank } = JSON.parse(event.dataTransfer.getData('card'));
+      try {
+        const { suit, rank } = JSON.parse(event.dataTransfer.getData('card'));
 
-      this.context.emit(GameActionType.MoveCardToStock, new Card(suit, rank));
-    } catch (error) {
-      console.error(error);
-    }
-  }
+        context.emit(GameActionType.MoveCardToStock, new Card(suit, rank));
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [context, highlight],
+  );
+
+  return (
+    <div
+      className={classNames('stock is-relative is-flex-shrink-0', {
+        'is-highlighted': highlight,
+      })}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDragEnd={onDragLeave}
+      onDrop={onDrop}
+    >
+      <CardComponent card={cards[0]} inStock isDraggable={isDraggable} />
+      <CounterComponent>{cards.length}</CounterComponent>
+    </div>
+  );
 }
+
+const MemoizedStockComponent = memo(StockComponent);
+
+export { MemoizedStockComponent as StockComponent };

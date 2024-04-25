@@ -1,200 +1,188 @@
-import * as React from "react";
-import classNames from "classnames";
+import classNames from 'classnames';
+import {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  type DragEvent,
+} from 'react';
 
-import Player from "../../game/Player.js";
-import Card from "../../game/Card.js";
-import GameActionType from "../GameActionType.js";
-import GameContext from "../GameContext.js";
-import Origin from "../../game/Origin.js";
-import { PLAYER_HAND_CARD_COUNT } from "../../game/Game.js";
+import { CardComponent } from './CardComponent.js';
+import { CounterComponent } from './CounterComponent.js';
+import { DelimiterComponent } from './DelimiterComponent.js';
+import { StockComponent } from './StockComponent.js';
+import { Card } from '../../game/Card.js';
+import { Origin } from '../../game/enums.js';
+import { PLAYER_HAND_CARD_COUNT } from '../../game/Game.js';
+import type { Player } from '../../game/Player.js';
+import { GameActionType } from '../GameActionType.js';
+import { GameContext } from '../GameContext.js';
 
-import CounterComponent from "./CounterComponent.js";
-import DelimiterComponent from "./DelimiterComponent.js";
-import CardComponent from "./CardComponent.js";
-import StockComponent from "./StockComponent.js";
+type Props = {
+  isEnemy?: boolean;
+  player: Player;
+};
 
-interface Props {
-  isEnemy?: boolean,
-  player: Player,
-}
+function PlayerComponent({ isEnemy, player }: Props) {
+  const context = useContext(GameContext);
 
-interface State {
-  highlight?: number;
-}
+  const [highlight, setHighlight] = useState<number | null>(null);
 
-export default class extends React.Component<Props, State> {
-  static contextType: React.Context<any> = GameContext;
-
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      highlight: null
-    };
-  }
-
-  componentDidMount() {
-    this.context.on(GameActionType.MoveCardToStock, (card) => this.onMoveCardToStock(card));
-  }
-
-  render() {
-    const { isEnemy, player } = this.props;
-
-    if (!player) {
-      return null;
-    }
-
-    const currentPlayer = this.context.currentPlayer();
-
-    return (
-      <div className="container block is-flex is-flex-direction-column player">
-        <div className="is-flex">
-          <StockComponent cards={player.stock} isDraggable={!isEnemy && this.context.isPlayersTurn()} isDroppable={!isEnemy}/>
-          <DelimiterComponent highlight={currentPlayer && currentPlayer.id === player.id}/>
-          {this.renderPiles()}
-        </div>
-        {this.renderHand()}
-      </div>
-    );
-  }
-
-  private renderHand() {
-    const { isEnemy, player } = this.props;
-
-    if (isEnemy) {
-      return null;
-    }
-
-    const { hand } = player;
-
-    return (
-      <div className="hand is-flex is-justify-content-center mt-6">
-        {[...Array(PLAYER_HAND_CARD_COUNT)].map((_, index) => {
-          const card = hand[index];
-
-          if (!card) {
-            return (
-              <div key={index} className="card"/>
-            );
-          }
-
-          return (
-            <CardComponent key={index} card={card} isDraggable={this.context.isPlayersTurn()} inHand={true}/>
-          );
-        })}
-      </div>
-    );
-  }
-
-  private renderPiles() {
-    return (
-      <div className="piles is-flex">
-        {this.props.player.piles.map((pile, index) => this.renderPile(pile, index))}
-      </div>
-    );
-  }
-
-  private renderPile(pile: Card[], index: number) {
-    return (
-      <div
-        key={index}
-        className={classNames('pile card mr-2', {
-          'is-highlighted': this.state.highlight === index
-        })}
-        onDragOver={(event) => this.onDragOver(event, index)}
-        onDrop={(event) => this.onDrop(event)}
-        onDragLeave={() => this.onDragLeave()}>
-        {!!pile.length && <CardComponent card={pile[0]} isDraggable={!this.props.isEnemy && this.context.isPlayersTurn()} inPile={true}/>}
-        <CounterComponent>{pile.length}</CounterComponent>
-      </div>
-    );
-  }
-
-  onDragOver(event, index) {
-    event.preventDefault();
-
-    if (this.props.isEnemy || !this.context.isPlayersTurn()) {
-      event.dataTransfer.dropEffect = 'none';
-
-      if (this.state.highlight !== null) {
-        this.setState({
-          highlight: null
-        });
+  useEffect(() => {
+    context?.on(GameActionType.MoveCardToStock, (card: Card) => {
+      if (!context.isPlayersTurn() || isEnemy) {
+        return;
       }
 
-      return;
-    }
+      try {
+        player.moveCardToOrigin(
+          player.findCardInOrigin(card, Origin.Hand) as Card,
+          Origin.Stock,
+        );
+        context.emit(GameActionType.EndTurn);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+  }, [context, isEnemy, player]);
 
-    try {
-      if (event.dataTransfer.types.includes('inpile')) {
+  const onDragOver = useCallback(
+    (event: DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+
+      if (isEnemy || !context?.isPlayersTurn()) {
         event.dataTransfer.dropEffect = 'none';
 
-        if (this.state.highlight !== null) {
-          this.setState({
-            highlight: null
-          });
+        if (highlight !== null) {
+          setHighlight(null);
         }
 
         return;
       }
-    } catch (error) {
-      console.error(error);
-    }
 
-    event.dataTransfer.dropEffect = 'move';
+      try {
+        if (event.dataTransfer.types.includes('inpile')) {
+          event.dataTransfer.dropEffect = 'none';
 
-    if (this.state.highlight === null) {
-      this.setState({
-        highlight: index
-      });
-    }
+          if (highlight !== null) {
+            setHighlight(null);
+          }
+
+          return;
+        }
+      } catch (error) {
+        console.error(error);
+      }
+
+      event.dataTransfer.dropEffect = 'move';
+
+      if (highlight === null) {
+        setHighlight(parseInt(event.currentTarget.dataset.index as string));
+      }
+    },
+    [context, highlight, isEnemy],
+  );
+
+  const onDrop = useCallback(
+    (event: DragEvent<HTMLDivElement>) => {
+      if (isEnemy || !context?.isPlayersTurn()) {
+        return;
+      }
+
+      if (highlight !== null) {
+        setHighlight(null);
+      }
+
+      try {
+        const { suit, rank } = JSON.parse(event.dataTransfer.getData('card'));
+
+        player.moveCardToOrigin(
+          player.findCardInOrigin(new Card(suit, rank), Origin.Hand) as Card,
+          Origin.Pile,
+        );
+        context?.emit(GameActionType.EndTurn);
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [context, highlight, isEnemy, player],
+  );
+
+  const onDragLeave = useCallback(
+    (event: DragEvent<HTMLDivElement>) => {
+      if (highlight !== null) {
+        setHighlight(null);
+      }
+    },
+    [highlight],
+  );
+
+  if (!player) {
+    return null;
   }
 
-  onDragLeave() {
-    if (this.state.highlight !== null) {
-      this.setState({
-        highlight: null
-      });
-    }
-  }
+  const currentPlayer = context?.currentPlayer();
 
-  onDrop(event) {
-    if (this.props.isEnemy || !this.context.isPlayersTurn()) {
-      return;
-    }
+  return (
+    <div className='container block is-flex is-flex-direction-column player'>
+      <div className='is-flex'>
+        <StockComponent
+          cards={player.stock}
+          isDraggable={!isEnemy && context?.isPlayersTurn()}
+          isDroppable={!isEnemy}
+        />
+        <DelimiterComponent
+          highlight={currentPlayer && currentPlayer.id === player.id}
+        />
+        <div className='piles is-flex'>
+          {player.piles.map((pile, index) => (
+            <div
+              key={index}
+              className={classNames('pile card mr-2', {
+                'is-highlighted': highlight === index,
+              })}
+              data-index={index}
+              onDragOver={onDragOver}
+              onDrop={onDrop}
+              onDragLeave={onDragLeave}
+            >
+              {!!pile.length && (
+                <CardComponent
+                  card={pile[0]}
+                  isDraggable={!isEnemy && context?.isPlayersTurn()}
+                  inPile
+                />
+              )}
+              <CounterComponent>{pile.length}</CounterComponent>
+            </div>
+          ))}
+        </div>
+      </div>
+      {!isEnemy && (
+        <div className='hand is-flex is-justify-content-center mt-6'>
+          {[...Array(PLAYER_HAND_CARD_COUNT)].map((_, index) => {
+            const card = player.hand[index];
 
-    if (this.state.highlight !== null) {
-      this.setState({
-        highlight: null
-      });
-    }
+            if (!card) {
+              return <div key={index} className='card' />;
+            }
 
-    try {
-      const { suit, rank } = JSON.parse(event.dataTransfer.getData('card'));
-
-      this.props.player.moveCardToOrigin(this.props.player.findCardInOrigin(new Card(suit, rank), Origin.Hand), Origin.Pile);
-      this.context.emit(GameActionType.EndTurn);
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  onMoveCardToStock(card: Card) {
-    if (!this.context.isPlayersTurn()) {
-      return;
-    }
-
-    const { isEnemy, player } = this.props;
-
-    if (isEnemy) {
-      return;
-    }
-
-    try {
-      player.moveCardToOrigin(player.findCardInOrigin(card, Origin.Hand), Origin.Stock);
-      this.context.emit(GameActionType.EndTurn);
-    } catch (error) {
-      console.error(error);
-    }
-  }
+            return (
+              <CardComponent
+                key={index}
+                card={card}
+                isDraggable={context?.isPlayersTurn()}
+                inHand
+              />
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 }
+
+const MemoizedPlayerComponent = memo(PlayerComponent);
+
+export { MemoizedPlayerComponent as PlayerComponent };

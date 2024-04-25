@@ -1,83 +1,95 @@
-import * as React from "react";
+import { memo, useContext, useEffect, useState } from 'react';
 
-import Card from "../../game/Card.js";
-import Game from "../../game/Game.js";
-import GameActionType from "../GameActionType.js";
-import GameContext from "../GameContext.js";
-import Origin from "../../game/Origin.js";
+import { PlayerComponent } from './PlayerComponent.js';
+import { StraightsComponent } from './StraightsComponent.js';
+import { ActionType } from '../../ActionType.js';
+import type { Card } from '../../game/Card.js';
+import type { Origin } from '../../game/enums.js';
+import type { Game } from '../../game/Game.js';
+import { GameActionType } from '../GameActionType.js';
+import { GameContext } from '../GameContext.js';
 
-import PlayerComponent from "./PlayerComponent.js";
-import StraightsComponent from "./StraightsComponent.js";
-import ActionType from "../../ActionType.js";
+type Props = {
+  game: Game;
+  playerId: number;
+};
 
-interface Props {
-  game: Game,
-  playerId: number
-}
+function GameComponent({ game, playerId }: Props) {
+  const context = useContext(GameContext);
 
-export default class extends React.Component<Props> {
-  static contextType: React.Context<any> = GameContext;
+  const [key, forceUpdate] = useState(0);
 
-  componentDidMount() {
-    this.context.on(GameActionType.EndTurn, () => this.onEndTurn());
-    this.context.on(GameActionType.MoveCardToStraight, ({ card, origin, straightIndex }) => this.onMoveCardToStraight(card, origin, straightIndex));
-  }
+  useEffect(() => {
+    context?.on(GameActionType.EndTurn, () => {
+      if (!context?.isPlayersTurn()) {
+        return;
+      }
 
-  render() {
-    const { game, playerId } = this.props;
+      try {
+        game.endTurn();
+        context?.emit(ActionType.UpdateGame);
+        forceUpdate(key + 1);
+      } catch (error) {
+        console.error(error);
+      }
+    });
 
-    if (!game) {
-      return null;
-    }
+    context?.on(
+      GameActionType.MoveCardToStraight,
+      ({
+        card,
+        origin,
+        straightIndex,
+      }: {
+        card: Card;
+        origin: Origin;
+        straightIndex: number;
+      }) => {
+        if (!context?.isPlayersTurn()) {
+          return;
+        }
 
-    // TODO more enemy players
-    return (
-      <div className="is-flex is-justify-content-center is-flex-direction-column">
-        <PlayerComponent player={game.players[playerId === 0 ? 1 : 0]} isEnemy={true}/>
-        <div className="container block is-flex is-flex-direction-row app--middle">
-          <StraightsComponent straights={game.straights}/>
-        </div>
-        <PlayerComponent player={game.players[playerId]}/>
-      </div>
+        let straight: Card[] | undefined;
+
+        if (straightIndex !== null) {
+          straight = game.straights[straightIndex];
+        }
+
+        try {
+          game.moveCardToStraight(
+            game.currentPlayer?.findCardInOrigin(card, origin) as Card,
+            origin,
+            straight,
+          );
+
+          context?.emit(ActionType.UpdateGame);
+          forceUpdate(key + 1);
+        } catch (error) {
+          console.error(error);
+        }
+      },
     );
+  }, [context, game, key]);
+
+  if (!game) {
+    return null;
   }
 
-  onEndTurn() {
-    if (!this.context.isPlayersTurn()) {
-      return;
-    }
-
-    const { game } = this.props;
-
-    try {
-      game.endTurn();
-      this.context.emit(ActionType.UpdateGame);
-      this.forceUpdate();
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  onMoveCardToStraight(card: Card, origin: Origin, straightIndex: number) {
-    if (!this.context.isPlayersTurn()) {
-      return;
-    }
-
-    const { game } = this.props;
-
-    let straight = null;
-
-    if (straightIndex !== null) {
-      straight = game.straights[straightIndex];
-    }
-
-    try {
-      game.moveCardToStraight(game.currentPlayer.findCardInOrigin(card, origin), origin, straight);
-
-      this.context.emit(ActionType.UpdateGame);
-      this.forceUpdate();
-    } catch (error) {
-      console.error(error);
-    }
-  }
+  // TODO more enemy players
+  return (
+    <div
+      key={key}
+      className='is-flex is-justify-content-center is-flex-direction-column'
+    >
+      <PlayerComponent player={game.players[playerId === 0 ? 1 : 0]} isEnemy />
+      <div className='container block is-flex is-flex-direction-row app--middle'>
+        <StraightsComponent straights={game.straights} />
+      </div>
+      <PlayerComponent player={game.players[playerId]} />
+    </div>
+  );
 }
+
+const MemoizedGameComponent = memo(GameComponent);
+
+export { MemoizedGameComponent as GameComponent };

@@ -1,8 +1,6 @@
-import Color from "./Color.js";
-import Suit from "./Suit.js";
-import Rank from "./Rank.js";
+import { Color, Rank, Suit } from './enums.js';
 
-const RANK_EVALUATION = {
+const RANK_EVALUATION = Object.freeze({
   [Rank.Ace]: 0,
   [Rank.N2]: 1,
   [Rank.N3]: 2,
@@ -15,10 +13,10 @@ const RANK_EVALUATION = {
   [Rank.N10]: 9,
   [Rank.Jack]: 10,
   [Rank.Queen]: 11,
-  [Rank.King]: 12
-};
+  [Rank.King]: 12,
+});
 
-export default class Card {
+export class Card {
   readonly suit: Suit;
   readonly rank: Rank;
   readonly color: Color;

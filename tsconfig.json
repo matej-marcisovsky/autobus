@@ -5,10 +5,8 @@
     "target": "es2020",
     "allowSyntheticDefaultImports": true,
     "outDir": "dist",
-    "jsx": "react"
+    "jsx": "react-jsx",
+    "strict": true
   },
-  "files": [
-    "src/server/app.ts",
-    "src/client/app.tsx"
-  ]
+  "include": ["src/**/*", "test/**/*"]
 }

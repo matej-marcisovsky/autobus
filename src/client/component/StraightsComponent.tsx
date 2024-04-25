@@ -1,144 +1,141 @@
-import * as React from "react";
-import classNames from "classnames";
+import classNames from 'classnames';
+import { memo, useCallback, useContext, useState, type DragEvent } from 'react';
 
-import Card from "../../game/Card.js";
-import GameActionType from "../GameActionType.js";
-import GameContext from "../GameContext.js";
-import Origin from "../../game/Origin.js";
-
-import CardComponent from "./CardComponent.js";
+import { CardComponent } from './CardComponent.js';
+import { Card } from '../../game/Card.js';
+import { Origin } from '../../game/enums.js';
+import { GameActionType } from '../GameActionType.js';
+import { GameContext } from '../GameContext.js';
 
 const MAX_PARENT_DEPTH = 3;
 
-interface Props {
-  straights: Array<Card[]>
-}
+type Props = {
+  straights: Card[][];
+};
 
-interface State {
-  highlight?: number;
-}
+function StraightsComponent({ straights }: Props) {
+  const context = useContext(GameContext);
 
-export default class extends React.Component<Props, State> {
-  static contextType: React.Context<any> = GameContext;
+  const [highlight, setHighlight] = useState<number | null>(null);
 
-  constructor(props) {
-    super(props);
+  const onDragOver = useCallback(
+    (event: DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
 
-    this.state = {
-      highlight: null
-    };
-  }
+      if (!context?.isPlayersTurn()) {
+        event.dataTransfer.dropEffect = 'none';
 
-  render() {
-    const { straights } = this.props;
+        if (highlight !== null) {
+          setHighlight(null);
+        }
+      } else {
+        event.dataTransfer.dropEffect = 'move';
 
-    return (
-      <div
-        className="is-flex-grow-1 is-flex"
-        onDragOver={(event) => this.onDragOver(event)}
-        onDrop={(event) => this.onDrop(event)}
-        onDragLeave={() => this.onDragLeave()}>
-        {straights.map((straight, index) => this.renderStraight(straight, index))}
-      </div>
-    );
-  }
+        try {
+          let straightIndex = null;
 
-  private renderStraight(straight: Card[], index: number) {
-    return (
-      <div
-        key={index}
-        className={classNames('straight mr-2', {
-          'is-highlighted': this.state.highlight === index
-        })}
-        data-index={index}>
-        <CardComponent card={straight[straight.length - 1]}/>
-      </div>
-    );
-  }
+          let target = event.target as HTMLDivElement;
+          for (let i = 0; i < MAX_PARENT_DEPTH; i++) {
+            if (
+              target.classList.contains('card') &&
+              target.parentElement?.classList.contains('straight')
+            ) {
+              straightIndex = parseInt(
+                target.parentElement.dataset.index as string,
+              );
+              break;
+            }
 
-  onDragOver(event) {
-    event.preventDefault();
+            target = target.parentElement as HTMLDivElement;
+          }
 
-    if (!this.context.isPlayersTurn()) {
-      event.dataTransfer.dropEffect = 'none';
-
-      if (this.state.highlight !== null) {
-        this.setState({
-          highlight: null
-        });
+          if (straightIndex !== null && straightIndex !== highlight) {
+            setHighlight(straightIndex);
+          }
+        } catch (error) {
+          console.error(error);
+        }
       }
-    } else {
-      event.dataTransfer.dropEffect = 'move';
+    },
+    [context, highlight],
+  );
+
+  const onDrop = useCallback(
+    (event: DragEvent<HTMLDivElement>) => {
+      if (!context?.isPlayersTurn()) {
+        return;
+      }
+
+      if (highlight !== null) {
+        setHighlight(null);
+      }
 
       try {
+        const { suit, rank } = JSON.parse(event.dataTransfer.getData('card'));
         let straightIndex = null;
+        let origin = Origin.Hand;
 
-        let target = event.target;
+        let target = event.target as HTMLDivElement;
         for (let i = 0; i < MAX_PARENT_DEPTH; i++) {
-          if (target.classList.contains('card') && target.parentElement.classList.contains('straight')) {
-            straightIndex = parseInt(target.parentElement.dataset.index);
+          if (
+            target.classList.contains('card') &&
+            target.parentElement?.classList.contains('straight')
+          ) {
+            straightIndex = target.parentElement.dataset.index;
             break;
           }
 
-          target = target.parentElement;
+          target = target.parentElement as HTMLDivElement;
         }
 
-        if (straightIndex !== null && straightIndex !== this.state.highlight) {
-          this.setState({
-            highlight: straightIndex
-          });
+        if (event.dataTransfer.getData('inpile')) {
+          origin = Origin.Pile;
         }
+
+        if (event.dataTransfer.getData('instock')) {
+          origin = Origin.Stock;
+        }
+
+        context.emit(GameActionType.MoveCardToStraight, {
+          card: new Card(suit, rank),
+          origin,
+          straightIndex,
+        });
       } catch (error) {
         console.error(error);
       }
+    },
+    [context, highlight],
+  );
+
+  const onDragLeave = useCallback(() => {
+    if (highlight !== null) {
+      setHighlight(null);
     }
-  }
+  }, [highlight]);
 
-  onDragLeave() {
-    if (this.state.highlight !== null) {
-      this.setState({
-        highlight: null
-      });
-    }
-  }
-
-  onDrop(event) {
-    if (!this.context.isPlayersTurn()) {
-      return;
-    }
-
-    if (this.state.highlight !== null) {
-      this.setState({
-        highlight: null
-      });
-    }
-
-    try {
-      const { suit, rank } = JSON.parse(event.dataTransfer.getData('card'));
-      let straightIndex = null;
-      let origin = Origin.Hand;
-
-      let target = event.target;
-      for (let i = 0; i < MAX_PARENT_DEPTH; i++) {
-        if (target.classList.contains('card') && target.parentElement.classList.contains('straight')) {
-          straightIndex = target.parentElement.dataset.index;
-          break;
-        }
-
-        target = target.parentElement;
-      }
-
-      if (event.dataTransfer.getData('inpile')) {
-        origin = Origin.Pile;
-      }
-
-      if (event.dataTransfer.getData('instock')) {
-        origin = Origin.Stock;
-      }
-
-      this.context.emit(GameActionType.MoveCardToStraight, { card: new Card(suit, rank), origin, straightIndex });
-    } catch (error) {
-      console.error(error);
-    }
-  }
+  return (
+    <div
+      className='is-flex-grow-1 is-flex'
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onDragLeave={onDragLeave}
+    >
+      {straights.map((straight, index) => (
+        <div
+          key={index}
+          className={classNames('straight mr-2', {
+            'is-highlighted': highlight === index,
+          })}
+          data-index={index}
+        >
+          <CardComponent card={straight[straight.length - 1]} />
+        </div>
+      ))}
+    </div>
+  );
 }
+
+const MemoizedStraightsComponent = memo(StraightsComponent);
+
+export { MemoizedStraightsComponent as StraightsComponent };
