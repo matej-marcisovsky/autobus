@@ -80,16 +80,16 @@ ws.onopen = () => {
     <GameContext.Provider
       value={{
         currentPlayer: () => game?.currentPlayer,
-        emit: async (eventName: string, data: any) =>
+        emit: async (eventName: string, data: Record<string, unknown>) =>
           emitter.emit(eventName, data),
         isPlayersTurn: () =>
           game &&
           game.currentPlayer?.id === playerId &&
           !game.players.find(player => !player.hasUser),
-        on: (eventName: string, listener: (data: any) => void) =>
-          emitter.on(eventName, listener),
-        off: (eventName: string, listener: (data: any) => void) =>
-          emitter.off(eventName, listener),
+        on: (
+          eventName: string,
+          listener: (data: Record<string, unknown>) => void,
+        ) => emitter.on(eventName, listener),
       }}
     >
       <AppComponent />

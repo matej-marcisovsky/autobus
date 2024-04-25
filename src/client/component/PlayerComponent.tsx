@@ -29,32 +29,30 @@ function PlayerComponent({ isEnemy, player }: Props) {
 
   const [highlight, setHighlight] = useState<number | null>(null);
 
-  const onMoveCardToStock = useCallback(
-    (card: Card) => {
-      if (!context?.isPlayersTurn() || isEnemy) {
-        return;
-      }
-
-      try {
-        player.moveCardToOrigin(
-          player.findCardInOrigin(card, Origin.Hand) as Card,
-          Origin.Stock,
-        );
-        context.emit(GameActionType.EndTurn);
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    [context, isEnemy, player],
-  );
-
   useEffect(() => {
-    context?.on(GameActionType.MoveCardToStock, onMoveCardToStock);
+    const unsubscribeMoveCardToStock = context?.on(
+      GameActionType.MoveCardToStock,
+      (card: Card) => {
+        if (!context?.isPlayersTurn() || isEnemy) {
+          return;
+        }
+
+        try {
+          player.moveCardToOrigin(
+            player.findCardInOrigin(card, Origin.Hand) as Card,
+            Origin.Stock,
+          );
+          context.emit(GameActionType.EndTurn);
+        } catch (error) {
+          console.error(error);
+        }
+      },
+    );
 
     return () => {
-      context?.off(GameActionType.MoveCardToStock, onMoveCardToStock);
+      unsubscribeMoveCardToStock!();
     };
-  }, [context, isEnemy, onMoveCardToStock, player]);
+  }, [context, isEnemy, player]);
 
   const onDragOver = useCallback(
     (event: DragEvent<HTMLDivElement>) => {
